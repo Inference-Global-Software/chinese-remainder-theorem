@@ -1,13 +1,14 @@
 # Implementation and validation
 
-The implementation is [`src/crt.inf`](../src/crt.inf). It preserves the agreed
+The implementation is [`src/main.inf`](../src/main.inf), the entry file of the
+native project defined by [`Inference.toml`](../Inference.toml). It preserves the agreed
 domain, result conventions, recurrence, and 15 source contracts. Helpers are
 private; only `crt_solve` and `crt_period` are exported.
 
 ## Build and run
 
 ```sh
-make build INFC=/path/to/infc
+infs build
 node scripts/demo.mjs 2 6 5 9
 node scripts/demo.mjs --json 2 6 4 9
 ```
@@ -18,18 +19,31 @@ exit 2; setup/runtime errors exit 3. The CLI validates decimal syntax and the
 full signed-64-bit range before making a Wasm call, preventing silent integer
 truncation. JSON integer values are decimal strings.
 
-`scripts/build.py` accepts either an absolute compiler path or a compiler name
-on `PATH`. The default is `INFC` or `infc` on `PATH`. Builds always use
-`--mode proof`; the demo and runtime tests use that same `crt.wasm` artifact.
-`build/crt/manifest.json` records its compiler, input, and output hashes.
+The manifest selects `[build] mode = "proof"` and
+`[verification] output-dir = "out"`. `infs build` discovers the project and
+emits `out/main.wasm` and `out/main.v`. The demo and runtime tests execute that
+same Wasm artifact. Use `INFC_PATH=/absolute/path/to/infc` to select the compiler;
+the recorded compiler revision is documented in the [walkthrough](walkthrough.md).
+
+For proof auditing, `python3 scripts/build.py` runs the same native project build
+and additionally records `out/manifest.json`. It records the compiler selected
+by `infs`, both toolchain binary hashes, the project manifest, source, and output
+hashes. It respects `INFC_PATH` and accepts `--infs` or `INFS` for a toolchain
+outside `PATH`. A plain `infs build` is sufficient to run the demo.
+
+This project exports a library API. The Node runner invokes its two exports;
+project-mode `infs run` expects a function named `main`, which this library does
+not export.
 
 ## Runtime and regression tests
 
 ```sh
-make test INFC=/path/to/infc
+python3 -m unittest discover -s tests -v
 ```
 
-The suite currently contains 13 test methods, with table-driven subcases:
+The suite currently contains 14 test methods, with table-driven subcases:
+
+- Native `infs build` project discovery followed by the scheduling demo.
 
 - 23,274 public API vectors, including exhaustive normalized residue combinations
   for moduli 1–16, deterministic large inputs, and full-width invalid inputs.
@@ -54,9 +68,7 @@ quantified proof obligations.
 ## Mathematical proofs
 
 ```sh
-make proofs
-# Or run everything:
-make check INFC=/path/to/infc
+python3 scripts/check_proofs.py
 ```
 
 The 16 exact mathematical/loop targets and four additional finite-run results
@@ -75,9 +87,9 @@ its container with this checkout mounted at `/workspaces/crt`. Build the program
 on the host first, then run:
 
 ```sh
-make build INFC=/path/to/infc
+python3 scripts/build.py
 docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
-  opam exec -- make wasm-proofs
+  opam exec -- python3 scripts/check_wasm_proofs.py
 ```
 
 The checker verifies artifact hashes, copies and recompiles the mathematical,

@@ -17,22 +17,30 @@ def command(*args, env=None):
 
 
 class BuildTests(unittest.TestCase):
-    def test_compiler_name_is_resolved_on_path(self):
-        compiler = os.environ.get('INFC', 'infc')
+    def test_native_project_build_runs_the_demo(self):
+        result = command(os.environ.get('INFS', 'infs'), 'build')
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        result = command('node', 'scripts/demo.mjs', '--json', 2, 6, 5, 9)
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        self.assertEqual(json.loads(result.stdout),
+                         {'status': 'solved', 'solution': '14', 'period': '18'})
+
+    def test_toolchain_name_is_resolved_on_path(self):
+        toolchain = os.environ.get('INFS', 'infs')
         import shutil
-        resolved = shutil.which(compiler)
-        self.assertIsNotNone(resolved, 'Test requires a real Inference compiler')
+        resolved = shutil.which(toolchain)
+        self.assertIsNotNone(resolved, 'Test requires the real infs toolchain')
         env = dict(os.environ, PATH=str(Path(resolved).parent) + os.pathsep + os.environ['PATH'])
-        result = command(sys.executable, 'scripts/build.py', '--infc', Path(resolved).name, env=env)
+        result = command(sys.executable, 'scripts/build.py', '--infs', Path(resolved).name, env=env)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def test_build_and_independent_reference_vectors(self):
         result = command(sys.executable, 'scripts/build.py')
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         vectors = [v for v in runtime_vectors() if v['fn'].startswith('crt_')]
-        path = ROOT / 'build/crt/runtime-vectors.json'
+        path = ROOT / 'out/runtime-vectors.json'
         path.write_text(json.dumps(vectors))
-        result = command('node', 'scripts/check_runtime.mjs', 'build/crt/crt.wasm', path)
+        result = command('node', 'scripts/check_runtime.mjs', 'out/main.wasm', path)
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertEqual(json.loads(result.stdout)['passed'], len(vectors))
 

@@ -5,7 +5,7 @@ From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 From Wasm Require Import datatypes numerics operations opsem host.
 From WasmVerifier Require Import Assertions Semantics Activation Verifier.
 From CRT Require Import CRTStatements CRTLoops.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTAPIModel CRTContracts CRTModule CRTExecution
   CRTCalls CRTInverseExecution CRTPublicExecution CRTSolveExecution
   CRTExecutionDeterminism.
@@ -30,15 +30,15 @@ Definition crt_run (hs : host_state) (i : nat)
     result = Wasm_int.Int64.signed v.
 
 Definition crt_gcd_exec hs m n :=
-  crt_run hs 0%nat [:: crt.Vi64 m; crt.Vi64 n].
+  crt_run hs 0%nat [:: main.Vi64 m; main.Vi64 n].
 Definition crt_normalize_exec hs z d :=
-  crt_run hs 1%nat [:: crt.Vi64 z; crt.Vi64 d].
+  crt_run hs 1%nat [:: main.Vi64 z; main.Vi64 d].
 Definition crt_inverse_exec hs B A :=
-  crt_run hs 2%nat [:: crt.Vi64 B; crt.Vi64 A].
+  crt_run hs 2%nat [:: main.Vi64 B; main.Vi64 A].
 Definition crt_period_exec hs m n :=
-  crt_run hs 3%nat [:: crt.Vi64 m; crt.Vi64 n].
+  crt_run hs 3%nat [:: main.Vi64 m; main.Vi64 n].
 Definition crt_solve_exec hs a m b n :=
-  crt_run hs 4%nat [:: crt.Vi64 a; crt.Vi64 m; crt.Vi64 b; crt.Vi64 n].
+  crt_run hs 4%nat [:: main.Vi64 a; main.Vi64 m; main.Vi64 b; main.Vi64 n].
 
 Lemma crt_run_word hs i args result :
   crt_run hs i args result -> word result.
@@ -50,7 +50,7 @@ Lemma crt_run_of_call hs i args result : word result ->
   sem_triple_at crt_store crt_caller_frame
     (AS_base (map T_const args) HA_true)
     [:: BI_call (N.of_nat i)]
-    (AS_base [:: T_const (crt.Vi64 result)] HA_true) ->
+    (AS_base [:: T_const (main.Vi64 result)] HA_true) ->
   crt_run hs i args result.
 Proof.
   move=> Hword Hcall.
@@ -72,27 +72,27 @@ Proof.
 Qed.
 
 Lemma crt_period_entry m n :
-  crt_entry_admissible crt.crt_period [:: crt.Vi64 m; crt.Vi64 n].
+  crt_entry_admissible main.crt_period [:: main.Vi64 m; main.Vi64 n].
 Proof.
   move=> defaults Hdefaults. vm_compute in Hdefaults.
   inversion Hdefaults; subst defaults.
-  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h crt.crt
-    crt.crt_period args_pinned locals_typed assertion_denote hassert_denote
+  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h main.main
+    main.crt_period args_pinned locals_typed assertion_denote hassert_denote
     stack_denote term_eq term_denote loc_read lookup_N val_loc f_locs
-    modfunc_type modfunc_locals mod_types runtime_inst crt.Vi64].
+    modfunc_type modfunc_locals mod_types runtime_inst main.Vi64].
   repeat split; try reflexivity; try (eexists; split; reflexivity).
 Qed.
 
 Lemma crt_solve_entry a m b n :
-  crt_entry_admissible crt.crt_solve
-    [:: crt.Vi64 a; crt.Vi64 m; crt.Vi64 b; crt.Vi64 n].
+  crt_entry_admissible main.crt_solve
+    [:: main.Vi64 a; main.Vi64 m; main.Vi64 b; main.Vi64 n].
 Proof.
   move=> defaults Hdefaults. vm_compute in Hdefaults.
   inversion Hdefaults; subst defaults.
-  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h crt.crt
-    crt.crt_solve args_pinned locals_typed assertion_denote hassert_denote
+  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h main.main
+    main.crt_solve args_pinned locals_typed assertion_denote hassert_denote
     stack_denote term_eq term_denote loc_read lookup_N val_loc f_locs
-    modfunc_type modfunc_locals mod_types runtime_inst crt.Vi64].
+    modfunc_type modfunc_locals mod_types runtime_inst main.Vi64].
   repeat split; try reflexivity; try (eexists; split; reflexivity).
 Qed.
 
@@ -130,9 +130,9 @@ Proof.
   move=> Hm Hn. apply: crt_run_of_call.
   - exact (proj2 (crt_period_Z_correct m n)).
   - apply: (crt_call_from_computes_at (i := 3%nat) (addr := N.of_nat 3)
-      (fdef := crt.crt_period)
-      (args := [:: crt.Vi64 m; crt.Vi64 n])
-      (rs := [:: crt.Vi64 (crt_period_Z m n)])
+      (fdef := main.crt_period)
+      (args := [:: main.Vi64 m; main.Vi64 n])
+      (rs := [:: main.Vi64 (crt_period_Z m n)])
       (params := [:: T_num T_i64; T_num T_i64])
       (results := [:: T_num T_i64])); try reflexivity.
     + exact: crt_period_entry.
@@ -146,9 +146,9 @@ Proof.
   move=> Ha Hm Hb Hn. apply: crt_run_of_call.
   - exact (proj2 (crt_solve_Z_correct a m b n)).
   - apply: (crt_call_from_computes_at (i := 4%nat) (addr := N.of_nat 4)
-      (fdef := crt.crt_solve)
-      (args := [:: crt.Vi64 a; crt.Vi64 m; crt.Vi64 b; crt.Vi64 n])
-      (rs := [:: crt.Vi64 (crt_solve_Z a m b n)])
+      (fdef := main.crt_solve)
+      (args := [:: main.Vi64 a; main.Vi64 m; main.Vi64 b; main.Vi64 n])
+      (rs := [:: main.Vi64 (crt_solve_Z a m b n)])
       (params := [:: T_num T_i64; T_num T_i64; T_num T_i64; T_num T_i64])
       (results := [:: T_num T_i64])); try reflexivity.
     + exact: crt_solve_entry.

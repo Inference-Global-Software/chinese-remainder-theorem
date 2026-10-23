@@ -7,7 +7,7 @@ From Wasm Require Import datatypes numerics operations host.
 From WasmVerifier Require Import Assertions Semantics NumericDischarge Automation Activation Verifier.
 From CRT Require Import CRTStatements.
 From CRTWasm Require Import CRTAPIModel.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -22,7 +22,7 @@ Proof.
 Qed.
 
 Lemma crt_contract_repr_signed (x : i64) :
-  crt.Vi64 (Wasm_int.Int64.signed x) = VAL_int64 x.
+  main.Vi64 (Wasm_int.Int64.signed x) = VAL_int64 x.
 Proof.
   change (VAL_int64 (Wasm_int.Int64.repr (Wasm_int.Int64.signed x)) = VAL_int64 x).
   by rewrite Wasm_int.Int64.repr_signed.
@@ -104,9 +104,9 @@ Lemma crt_contract_guard_false (V : valuation) (h : aheap)
   term_denote V a = Some va -> term_denote V b = Some vb ->
   app_relop op va vb = false ->
   hassert_denote V
-    (kfalse (HA_not (term_eq (T_relop nt op a b) (T_const (crt.Vi32 0))))) h.
+    (kfalse (HA_not (term_eq (T_relop nt op a b) (T_const (main.Vi32 0))))) h.
 Proof.
-  move=> Ha Hb Hop. exists (crt.Vi32 0). split; last by [].
+  move=> Ha Hb Hop. exists (main.Vi32 0). split; last by [].
   by rewrite /= Ha Hb Hop.
 Qed.
 
@@ -128,20 +128,20 @@ Definition crt_helper_normalize_total (FI : fun_interp) : Prop :=
 Lemma crt_helper_normalize_total_payload (FI : fun_interp) :
   crt_helper_normalize_total FI ->
   forall (V : valuation) (h : aheap), val_fun V = FI ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec3) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec3) h.
 Proof.
-  move=> Htotal V h Hpin. rewrite /crt.crt__HelperContracts_hspec3.
+  move=> Htotal V h Hpin. rewrite /main.main__HelperContracts_hspec3.
   case: (crt_leaf_i64_or_kfalse V h 0%num) => [[z Hz]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
   case: (crt_leaf_i64_or_kfalse V h 1%num) => [[d Hd]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hlo: (app_relop (Relop_i (ROI_le SX_S)) (crt.Vi64 1) (VAL_int64 d)).
+  case Hlo: (app_relop (Relop_i (ROI_le SX_S)) (main.Vi64 1) (VAL_int64 d)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_const (crt.Vi64 1)) (T_local 1%num) (crt.Vi64 1) (VAL_int64 d) erefl Hd Hlo.
+         (T_const (main.Vi64 1)) (T_local 1%num) (main.Vi64 1) (VAL_int64 d) erefl Hd Hlo.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 d) (crt.Vi64 2147483647)).
+  case Hhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 d) (main.Vi64 2147483647)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_local 1%num) (T_const (crt.Vi64 2147483647)) (VAL_int64 d) (crt.Vi64 2147483647) Hd erefl Hhi.
+         (T_local 1%num) (T_const (main.Vi64 2147483647)) (VAL_int64 d) (main.Vi64 2147483647) Hd erefl Hhi.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
   have Hdmod : (1 <= Wasm_int.Int64.signed d <= M)%Z.
   { rewrite !crt_contract_le in Hlo Hhi.
@@ -155,28 +155,28 @@ Qed.
 Lemma crt_helper_gcd_total_payload (FI : fun_interp) :
   crt_helper_gcd_total FI ->
   forall (V : valuation) (h : aheap), val_fun V = FI ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec1) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec1) h.
 Proof.
-  move=> Htotal V h Hpin. rewrite /crt.crt__HelperContracts_hspec1.
+  move=> Htotal V h Hpin. rewrite /main.main__HelperContracts_hspec1.
   case: (crt_leaf_i64_or_kfalse V h 0%num) => [[m Hm]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
   case: (crt_leaf_i64_or_kfalse V h 1%num) => [[n Hn]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hmlo: (app_relop (Relop_i (ROI_le SX_S)) (crt.Vi64 1) (VAL_int64 m)).
+  case Hmlo: (app_relop (Relop_i (ROI_le SX_S)) (main.Vi64 1) (VAL_int64 m)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_const (crt.Vi64 1)) (T_local 0%num) (crt.Vi64 1) (VAL_int64 m) erefl Hm Hmlo.
+         (T_const (main.Vi64 1)) (T_local 0%num) (main.Vi64 1) (VAL_int64 m) erefl Hm Hmlo.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hmhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 m) (crt.Vi64 2147483647)).
+  case Hmhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 m) (main.Vi64 2147483647)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_local 0%num) (T_const (crt.Vi64 2147483647)) (VAL_int64 m) (crt.Vi64 2147483647) Hm erefl Hmhi.
+         (T_local 0%num) (T_const (main.Vi64 2147483647)) (VAL_int64 m) (main.Vi64 2147483647) Hm erefl Hmhi.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hnlo: (app_relop (Relop_i (ROI_le SX_S)) (crt.Vi64 1) (VAL_int64 n)).
+  case Hnlo: (app_relop (Relop_i (ROI_le SX_S)) (main.Vi64 1) (VAL_int64 n)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_const (crt.Vi64 1)) (T_local 1%num) (crt.Vi64 1) (VAL_int64 n) erefl Hn Hnlo.
+         (T_const (main.Vi64 1)) (T_local 1%num) (main.Vi64 1) (VAL_int64 n) erefl Hn Hnlo.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
-  case Hnhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 n) (crt.Vi64 2147483647)).
+  case Hnhi: (app_relop (Relop_i (ROI_le SX_S)) (VAL_int64 n) (main.Vi64 2147483647)).
   2: { have Hbad := @crt_contract_guard_false V h T_i64 (Relop_i (ROI_le SX_S))
-         (T_local 1%num) (T_const (crt.Vi64 2147483647)) (VAL_int64 n) (crt.Vi64 2147483647) Hn erefl Hnhi.
+         (T_local 1%num) (T_const (main.Vi64 2147483647)) (VAL_int64 n) (main.Vi64 2147483647) Hn erefl Hnhi.
        apply: hdenote_ktrue_Himpl_introl. crt_false_antecedent. }
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n).
   { rewrite !crt_contract_le in Hmlo Hmhi Hnlo Hnhi.
@@ -200,9 +200,9 @@ Definition crt_public_solve_total (FI : fun_interp) : Prop :=
 Lemma crt_public_period_total_payload (FI : fun_interp) :
   crt_public_period_total FI ->
   forall (V : valuation) (h : aheap), val_fun V = FI ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec2) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec2) h.
 Proof.
-  move=> Htotal V h Hpin. rewrite /crt.crt__PublicContracts_hspec2.
+  move=> Htotal V h Hpin. rewrite /main.main__PublicContracts_hspec2.
   case: (crt_leaf_i64_or_kfalse V h 0%num) => [[m Hm]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl.
        exact: hdenote_kfalse_Hand_introl Hbad. }
@@ -217,9 +217,9 @@ Qed.
 Lemma crt_public_solve_total_payload (FI : fun_interp) :
   crt_public_solve_total FI ->
   forall (V : valuation) (h : aheap), val_fun V = FI ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec1) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec1) h.
 Proof.
-  move=> Htotal V h Hpin. rewrite /crt.crt__PublicContracts_hspec1.
+  move=> Htotal V h Hpin. rewrite /main.main__PublicContracts_hspec1.
   case: (crt_leaf_i64_or_kfalse V h 0%num) => [[a Ha]|Hbad].
   2: { apply: hdenote_ktrue_Himpl_introl.
        exact: hdenote_kfalse_Hand_introl Hbad. }
@@ -264,23 +264,23 @@ Definition crt_model_interp : fun_interp :=
     match i, args with
     | 0, [:: VAL_int64 m; VAL_int64 n] =>
         if crt_moduli_b (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n)
-        then Some [:: crt.Vi64 (Z.gcd (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]
+        then Some [:: main.Vi64 (Z.gcd (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]
         else None
     | 1, [:: VAL_int64 z; VAL_int64 d] =>
         if ((1 <=? Wasm_int.Int64.signed d) && (Wasm_int.Int64.signed d <=? M))%Z
-        then Some [:: crt.Vi64 (Wasm_int.Int64.signed z mod Wasm_int.Int64.signed d)]
+        then Some [:: main.Vi64 (Wasm_int.Int64.signed z mod Wasm_int.Int64.signed d)]
         else None
     | 2, [:: VAL_int64 b; VAL_int64 a] =>
         if ((1 <=? Wasm_int.Int64.signed b) &&
             (Wasm_int.Int64.signed b <? Wasm_int.Int64.signed a) &&
             (Wasm_int.Int64.signed a <=? M) &&
             (Z.gcd (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed b) =? 1))%Z
-        then Some [:: crt.Vi64 (crt_inverse_Z (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed a))]
+        then Some [:: main.Vi64 (crt_inverse_Z (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed a))]
         else None
     | 3, [:: VAL_int64 m; VAL_int64 n] =>
-        Some [:: crt.Vi64 (crt_period_Z (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]
+        Some [:: main.Vi64 (crt_period_Z (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]
     | 4, [:: VAL_int64 a; VAL_int64 m; VAL_int64 b; VAL_int64 n] =>
-        Some [:: crt.Vi64 (crt_solve_Z (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
+        Some [:: main.Vi64 (crt_solve_Z (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
           (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed n))]
     | _, _ => None
     end.
@@ -309,24 +309,24 @@ Proof. move=> a m b n. by eexists. Qed.
 Section Host.
 Context `{ho : host}.
 
-Theorem crt_model_realized_from_execution (rt : module_runtime crt.crt) :
+Theorem crt_model_realized_from_execution (rt : module_runtime main.main) :
   (forall m n : i64,
     moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) ->
     fun_computes_at rt 0 [:: VAL_int64 m; VAL_int64 n]
-      [:: crt.Vi64 (Z.gcd (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]) ->
+      [:: main.Vi64 (Z.gcd (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]) ->
   (forall z d : i64, (1 <= Wasm_int.Int64.signed d <= M)%Z ->
     fun_computes_at rt 1 [:: VAL_int64 z; VAL_int64 d]
-      [:: crt.Vi64 (Wasm_int.Int64.signed z mod Wasm_int.Int64.signed d)]) ->
+      [:: main.Vi64 (Wasm_int.Int64.signed z mod Wasm_int.Int64.signed d)]) ->
   (forall b a : i64,
     eea_inputs (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed b) ->
     Z.gcd (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed b) = 1%Z ->
     fun_computes_at rt 2 [:: VAL_int64 b; VAL_int64 a]
-      [:: crt.Vi64 (crt_inverse_Z (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed a))]) ->
+      [:: main.Vi64 (crt_inverse_Z (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed a))]) ->
   (forall m n : i64, fun_computes_at rt 3 [:: VAL_int64 m; VAL_int64 n]
-      [:: crt.Vi64 (crt_period_Z (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]) ->
+      [:: main.Vi64 (crt_period_Z (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n))]) ->
   (forall a m b n : i64, fun_computes_at rt 4
       [:: VAL_int64 a; VAL_int64 m; VAL_int64 b; VAL_int64 n]
-      [:: crt.Vi64 (crt_solve_Z (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
+      [:: main.Vi64 (crt_solve_Z (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
         (Wasm_int.Int64.signed b) (Wasm_int.Int64.signed n))]) ->
   interp_realized_at rt crt_model_interp.
 Proof.
@@ -360,7 +360,7 @@ Proof.
     move=> [<-]. exact: Hs.
 Qed.
 
-Lemma crt_public_interp_realized_at (rt : module_runtime crt.crt)
+Lemma crt_public_interp_realized_at (rt : module_runtime main.main)
     (p : i64 -> i64 -> value_num)
     (s : i64 -> i64 -> i64 -> i64 -> value_num) :
   (forall m n, fun_computes_at rt 3
@@ -381,15 +381,15 @@ Proof.
 Qed.
 
 Theorem crt_public_totality_clauses_from_execution
-    (rt : module_runtime crt.crt)
+    (rt : module_runtime main.main)
     (p : i64 -> i64 -> value_num)
     (s : i64 -> i64 -> i64 -> i64 -> value_num) :
   (forall m n, fun_computes_at rt 3
     [:: VAL_int64 m; VAL_int64 n] [:: p m n]) ->
   (forall a m b n, fun_computes_at rt 4
     [:: VAL_int64 a; VAL_int64 m; VAL_int64 b; VAL_int64 n] [:: s a m b n]) ->
-  ValidSpec crt.crt
-    [:: crt.crt__PublicContracts_hspec1; crt.crt__PublicContracts_hspec2].
+  ValidSpec main.main
+    [:: main.main__PublicContracts_hspec1; main.main__PublicContracts_hspec2].
 Proof.
   move=> Hp Hs. right. exists rt. move=> h.
   exists (crt_public_interp p s). split.

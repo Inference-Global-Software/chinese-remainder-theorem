@@ -7,7 +7,7 @@ From WasmVerifier Require Import Assertions Triples Semantics Pure Control Multi
   NumericDischarge Automation Activation Verifier MultiExitK Loop.
 From WasmVerifier.examples Require Import Issue316OverflowExample.
 From CRT Require Import CRTStatements CRTLoops.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTExecution CRTCheckedArithmetic CRTLoopRules CRTCalls CRTModule CRTStorePure CRTAPIModel.
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -45,12 +45,12 @@ Ltac heap_unpack :=
     let H1 := fresh "Hloc" in let H2 := fresh "Hloc" in destruct Hp as [H1 H2]
   end.
 Lemma checked_mul_Z G H x y :
-  loc_stable 12%num (crt.Vi64 x) H -> loc_stable 13%num (crt.Vi64 y) H ->
-  loc_stable 14%num (crt.Vi64 (x * y)) H ->
+  loc_stable 12%num (main.Vi64 x) H -> loc_stable 13%num (main.Vi64 y) H ->
+  loc_stable 14%num (main.Vi64 (x * y)) H ->
   loc_present 12%num H -> loc_present 13%num H -> loc_present 14%num H ->
   word x -> word y -> word (x * y) ->
-  sem_triple G (AS_base [:: T_const (crt.Vi64 x); T_const (crt.Vi64 y)] H)
-    crt_checked_mul_code (AS_base [:: T_const (crt.Vi64 (x * y))] H).
+  sem_triple G (AS_base [:: T_const (main.Vi64 x); T_const (main.Vi64 y)] H)
+    crt_checked_mul_code (AS_base [:: T_const (main.Vi64 (x * y))] H).
 Proof.
   move=> SA SB SR PA PB PR Wx Wy Wxy.
   have E := crt_i64_mul_repr Wx Wy.
@@ -66,12 +66,12 @@ Proof.
   rewrite E in P. exact: P.
 Qed.
 Lemma checked_sub_Z G H x y :
-  loc_stable 12%num (crt.Vi64 x) H -> loc_stable 13%num (crt.Vi64 y) H ->
-  loc_stable 14%num (crt.Vi64 (x - y)) H ->
+  loc_stable 12%num (main.Vi64 x) H -> loc_stable 13%num (main.Vi64 y) H ->
+  loc_stable 14%num (main.Vi64 (x - y)) H ->
   loc_present 12%num H -> loc_present 13%num H -> loc_present 14%num H ->
   word x -> word y -> word (x - y) ->
-  sem_triple G (AS_base [:: T_const (crt.Vi64 x); T_const (crt.Vi64 y)] H)
-    crt_checked_sub_code (AS_base [:: T_const (crt.Vi64 (x - y))] H).
+  sem_triple G (AS_base [:: T_const (main.Vi64 x); T_const (main.Vi64 y)] H)
+    crt_checked_sub_code (AS_base [:: T_const (main.Vi64 (x - y))] H).
 Proof.
   move=> SA SB SR PA PB PR Wx Wy Wxy.
   have E := crt_i64_sub_repr Wx Wy.
@@ -88,14 +88,14 @@ Proof.
 Qed.
 
 Definition inverse_head A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
     (HA_and (HA_defined (T_local 8%num))
     (HA_and (HA_defined (T_local 9%num))
     (HA_and (HA_defined (T_local 10%num))
@@ -105,14 +105,14 @@ Definition inverse_head A B e : hassert :=
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 Definition inverse_ready_1 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
     (HA_and (HA_defined (T_local 8%num))
     (HA_and (HA_defined (T_local 9%num))
     (HA_and (HA_defined (T_local 10%num))
@@ -123,15 +123,15 @@ Definition inverse_ready_1 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_stage_1 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
     (HA_and (HA_defined (T_local 9%num))
     (HA_and (HA_defined (T_local 10%num))
     (HA_and (HA_defined (T_local 11%num))
@@ -141,15 +141,15 @@ Definition inverse_stage_1 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_ready_2 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
     (HA_and (HA_defined (T_local 9%num))
     (HA_and (HA_defined (T_local 10%num))
     (HA_and (HA_defined (T_local 11%num))
@@ -159,16 +159,16 @@ Definition inverse_ready_2 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_stage_2 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
     (HA_and (HA_defined (T_local 10%num))
     (HA_and (HA_defined (T_local 11%num))
     (HA_and (HA_defined (T_local 12%num))
@@ -177,16 +177,16 @@ Definition inverse_stage_2 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_ready_3 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
     (HA_and (HA_defined (T_local 10%num))
     (HA_and (HA_defined (T_local 11%num))
     (HA_and (HA_defined (T_local 12%num))
@@ -195,17 +195,17 @@ Definition inverse_ready_3 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_stage_3 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
     (HA_and (HA_defined (T_local 11%num))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
@@ -213,17 +213,17 @@ Definition inverse_stage_3 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_ready_4 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
     (HA_and (HA_defined (T_local 11%num))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
@@ -231,234 +231,234 @@ Definition inverse_ready_4 A B e : hassert :=
     HA_true))))))))))))))).
 
 Definition inverse_stage_4 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r0 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r0 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_5 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
     (HA_and (HA_defined (T_local 2%num))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_5 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_6 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
     (HA_and (HA_defined (T_local 3%num))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_6 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s0 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s0 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_7 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
     (HA_and (HA_defined (T_local 4%num))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_7 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_8 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
     (HA_and (HA_defined (T_local 5%num))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_8 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t0 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t0 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_9 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
     (HA_and (HA_defined (T_local 6%num))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_9 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_ready_10 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t1 e))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t1 e))))
     (HA_and (HA_defined (T_local 7%num))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 
 Definition inverse_stage_10 A B e : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e))))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e))))
-    (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t1 e))))
-    (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
-    (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e))))
-    (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e))))
-    (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
-    (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e))))
+    (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t1 e))))
+    (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
+    (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e))))
+    (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e))))
+    (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))))
+    (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))))
     (HA_and (HA_defined (T_local 12%num))
     (HA_and (HA_defined (T_local 13%num))
     (HA_and (HA_defined (T_local 14%num))
@@ -502,7 +502,7 @@ Ltac heap_from HH := cbv beta iota zeta delta [inverse_head inverse_ready_1 inve
 
 Lemma inverse_update_sem A B e :
   eea_inputs A B -> eea_inv A B e -> 0 < r1 e ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (inverse_head A B e))
+  sem_triple (triv_ctx main.main) (AS_base [::] (inverse_head A B e))
     inverse_update_code (AS_base [::] (inverse_head A B (eea_step e))).
 Proof.
   move=> Hin Hinv Hpos.
@@ -520,138 +520,138 @@ Proof.
   have Wt1 : word (t1 e) by apply: (abs_word_small _ A); assumption.
   rewrite /inverse_update_code.
   apply: (sem_seq (es1 := [:: BI_local_get 2%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e))] (inverse_head A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e))] (inverse_head A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e)); T_const (crt.Vi64 (r1 e))] (inverse_head A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e)); T_const (main.Vi64 (r1 e))] (inverse_head A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_binop T_i64 (Binop_i (BOI_div SX_S))])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e / r1 e))] (inverse_head A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e / r1 e))] (inverse_head A B e))).
   { apply: binop_consts; [by vm_compute | by [] | by [] | exact DivExact]. }
   apply: (sem_seq (es1 := [:: BI_local_set 8%num])
     (Q := AS_base [::] (inverse_stage_1 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (r0 e / r1 e))] (inverse_ready_1 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 8%num) (T_const (crt.Vi64 (r0 e / r1 e)))) (inverse_ready_1 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (r0 e / r1 e))] (inverse_ready_1 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 8%num) (T_const (main.Vi64 (r0 e / r1 e)))) (inverse_ready_1 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 2%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e))] (inverse_stage_1 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e))] (inverse_stage_1 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e)); T_const (crt.Vi64 (r1 e))] (inverse_stage_1 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e)); T_const (main.Vi64 (r1 e))] (inverse_stage_1 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_binop T_i64 (Binop_i (BOI_rem SX_S))])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e mod r1 e))] (inverse_stage_1 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e mod r1 e))] (inverse_stage_1 A B e))).
   { apply: binop_consts; [by vm_compute | by [] | by [] | exact RemExact]. }
   apply: (sem_seq (es1 := [:: BI_local_set 9%num])
     (Q := AS_base [::] (inverse_stage_2 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (r0 e mod r1 e))] (inverse_ready_2 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 9%num) (T_const (crt.Vi64 (r0 e mod r1 e)))) (inverse_ready_2 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (r0 e mod r1 e))] (inverse_ready_2 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 9%num) (T_const (main.Vi64 (r0 e mod r1 e)))) (inverse_ready_2 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 4%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e))] (inverse_stage_2 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e))] (inverse_stage_2 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 8%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e)); T_const (crt.Vi64 (r0 e / r1 e))] (inverse_stage_2 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e)); T_const (main.Vi64 (r0 e / r1 e))] (inverse_stage_2 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 5%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e)); T_const (crt.Vi64 (r0 e / r1 e)); T_const (crt.Vi64 (s1 e))] (inverse_stage_2 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e)); T_const (main.Vi64 (r0 e / r1 e)); T_const (main.Vi64 (s1 e))] (inverse_stage_2 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := crt_checked_mul_code)
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e)); T_const (crt.Vi64 ((r0 e / r1 e) * s1 e))] (inverse_stage_2 A B e))).
-  { apply: (sem_frame_consts (vf := [:: crt.Vi64 (s0 e)])). apply: checked_mul_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Wq | exact Ws1 | exact Wsp]. }
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e)); T_const (main.Vi64 ((r0 e / r1 e) * s1 e))] (inverse_stage_2 A B e))).
+  { apply: (sem_frame_consts (vf := [:: main.Vi64 (s0 e)])). apply: checked_mul_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Wq | exact Ws1 | exact Wsp]. }
   apply: (sem_seq (es1 := crt_checked_sub_code)
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_stage_2 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_stage_2 A B e))).
   { apply: checked_sub_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Ws0 | exact Wsp | exact Wsn]. }
   apply: (sem_seq (es1 := [:: BI_local_set 10%num])
     (Q := AS_base [::] (inverse_stage_3 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_ready_3 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 10%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e))))) (inverse_ready_3 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_ready_3 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 10%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e))))) (inverse_ready_3 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 6%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e))] (inverse_stage_3 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e))] (inverse_stage_3 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 8%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e)); T_const (crt.Vi64 (r0 e / r1 e))] (inverse_stage_3 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e)); T_const (main.Vi64 (r0 e / r1 e))] (inverse_stage_3 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 7%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e)); T_const (crt.Vi64 (r0 e / r1 e)); T_const (crt.Vi64 (t1 e))] (inverse_stage_3 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e)); T_const (main.Vi64 (r0 e / r1 e)); T_const (main.Vi64 (t1 e))] (inverse_stage_3 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := crt_checked_mul_code)
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e)); T_const (crt.Vi64 ((r0 e / r1 e) * t1 e))] (inverse_stage_3 A B e))).
-  { apply: (sem_frame_consts (vf := [:: crt.Vi64 (t0 e)])). apply: checked_mul_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Wq | exact Wt1 | exact Wtp]. }
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e)); T_const (main.Vi64 ((r0 e / r1 e) * t1 e))] (inverse_stage_3 A B e))).
+  { apply: (sem_frame_consts (vf := [:: main.Vi64 (t0 e)])). apply: checked_mul_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Wq | exact Wt1 | exact Wtp]. }
   apply: (sem_seq (es1 := crt_checked_sub_code)
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_stage_3 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_stage_3 A B e))).
   { apply: checked_sub_Z; [stable_tac | stable_tac | stable_tac | present_tac | present_tac | present_tac | exact Wt0 | exact Wtp | exact Wtn]. }
   apply: (sem_seq (es1 := [:: BI_local_set 11%num])
     (Q := AS_base [::] (inverse_stage_4 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_ready_4 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 11%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e))))) (inverse_ready_4 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_ready_4 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 11%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e))))) (inverse_ready_4 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r1 e))] (inverse_stage_4 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r1 e))] (inverse_stage_4 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 2%num])
     (Q := AS_base [::] (inverse_stage_5 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (r1 e))] (inverse_ready_5 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (r1 e)))) (inverse_ready_5 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (r1 e))] (inverse_ready_5 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (r1 e)))) (inverse_ready_5 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 9%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (r0 e mod r1 e))] (inverse_stage_5 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (r0 e mod r1 e))] (inverse_stage_5 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 3%num])
     (Q := AS_base [::] (inverse_stage_6 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (r0 e mod r1 e))] (inverse_ready_6 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (r0 e mod r1 e)))) (inverse_ready_6 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (r0 e mod r1 e))] (inverse_ready_6 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (r0 e mod r1 e)))) (inverse_ready_6 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 5%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (s1 e))] (inverse_stage_6 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s1 e))] (inverse_stage_6 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 4%num])
     (Q := AS_base [::] (inverse_stage_7 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (s1 e))] (inverse_ready_7 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (s1 e)))) (inverse_ready_7 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (s1 e))] (inverse_ready_7 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (s1 e)))) (inverse_ready_7 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 10%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_stage_7 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_stage_7 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 5%num])
     (Q := AS_base [::] (inverse_stage_8 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_ready_8 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (s0 e - ((r0 e / r1 e) * s1 e))))) (inverse_ready_8 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e)))] (inverse_ready_8 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (s0 e - ((r0 e / r1 e) * s1 e))))) (inverse_ready_8 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 7%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t1 e))] (inverse_stage_8 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t1 e))] (inverse_stage_8 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 6%num])
     (Q := AS_base [::] (inverse_stage_9 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (t1 e))] (inverse_ready_9 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 (t1 e)))) (inverse_ready_9 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (t1 e))] (inverse_ready_9 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 (t1 e)))) (inverse_ready_9 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 11%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_stage_9 A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_stage_9 A B e))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 7%num])
     (Q := AS_base [::] (inverse_stage_10 A B e))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_ready_10 A B e))
-      (Q' := AS_base [::] (HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 (t0 e - ((r0 e / r1 e) * t1 e))))) (inverse_ready_10 A B e)))).
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e)))] (inverse_ready_10 A B e))
+      (Q' := AS_base [::] (HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 (t0 e - ((r0 e / r1 e) * t1 e))))) (inverse_ready_10 A B e)))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - move=> V [vs h] [Hs HH]. split; first exact Hs. heap_from HH.
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
@@ -662,13 +662,13 @@ Proof.
   - exact: sem_nil_same.
 Qed.
 Lemma inverse_condition_sem A B e : word (r1 e) ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (inverse_head A B e))
-    [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  sem_triple (triv_ctx main.main) (AS_base [::] (inverse_head A B e))
+    [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz]
     (AS_base [:: T_const (VAL_int32 (wasm_bool (negb (0 <? r1 e))))] (inverse_head A B e)).
 Proof.
   move=> W1.
-  apply: (sem_seq (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  apply: (sem_seq (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_gt SX_S))])
     (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (0 <? r1 e)))] (inverse_head A B e))).
   - rewrite -(crt_i64_gt_zero W1).
@@ -676,12 +676,12 @@ Proof.
   - exact: crt_eqz_bool_sem.
 Qed.
 Definition inverse_loop_code : seq basic_instruction :=
-  [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz;
       BI_br_if 1%num] ++ inverse_update_code ++ [:: BI_br 0%num].
 Lemma inverse_loop_run_sem A B e final : eea_run e final ->
   eea_inputs A B -> eea_inv A B e ->
-  sem_mxk (triv_ctx crt.crt) (AS_base [::] (inverse_head A B e))
+  sem_mxk (triv_ctx main.main) (AS_base [::] (inverse_head A B e))
     [:: BI_loop (BT_valtype None) inverse_loop_code]
     (AS_base [::] (inverse_head A B final)) crt_false_assert
     (fun k => if k is 0%nat then AS_base [::] (inverse_head A B final) else crt_false_assert).
@@ -693,7 +693,7 @@ Proof.
     + move=> V vs h [_ Hfalse]. by case: Hfalse.
     + rewrite /inverse_loop_code.
       apply: (sem_mxk_seq
-        (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+        (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
           BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz])
         (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool true))] (inverse_head A B e))).
       * apply: sem_mxk_lift.
@@ -717,7 +717,7 @@ Proof.
     + move=> V vs h [Hs _]. by case: Hs => <-.
     + rewrite /inverse_loop_code.
       apply: (sem_mxk_seq
-        (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+        (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
           BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz])
         (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool false))] (inverse_head A B e))).
       * apply: sem_mxk_lift.
@@ -734,7 +734,7 @@ Proof.
 Qed.
 Lemma inverse_block_run_sem A B e final : eea_run e final ->
   eea_inputs A B -> eea_inv A B e ->
-  sem_mxk (triv_ctx crt.crt) (AS_base [::] (inverse_head A B e))
+  sem_mxk (triv_ctx main.main) (AS_base [::] (inverse_head A B e))
     [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) inverse_loop_code]]
     (AS_base [::] (inverse_head A B final)) crt_false_assert (fun _ => crt_false_assert).
 Proof.
@@ -761,8 +761,8 @@ Proof.
 Qed.
 
 Definition inverse_entry A B : hassert :=
-  (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 (B))))
-    (HA_and (term_eq (T_local 1%num) (T_const (crt.Vi64 (A))))
+  (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 (B))))
+    (HA_and (term_eq (T_local 1%num) (T_const (main.Vi64 (A))))
     (HA_and (HA_defined (T_local 2%num))
     (HA_and (HA_defined (T_local 3%num))
     (HA_and (HA_defined (T_local 4%num))
@@ -778,67 +778,67 @@ Definition inverse_entry A B : hassert :=
     (HA_and (HA_defined (T_local 14%num))
     HA_true))))))))))))))).
 Definition inverse_initial_1 A B : hassert :=
-  HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 A))) (inverse_entry A B).
+  HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 A))) (inverse_entry A B).
 Definition inverse_initial_2 A B : hassert :=
-  HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 B))) (inverse_initial_1 A B).
+  HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 B))) (inverse_initial_1 A B).
 Definition inverse_initial_3 A B : hassert :=
-  HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 1))) (inverse_initial_2 A B).
+  HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 1))) (inverse_initial_2 A B).
 Definition inverse_initial_4 A B : hassert :=
-  HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 0))) (inverse_initial_3 A B).
+  HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 0))) (inverse_initial_3 A B).
 Definition inverse_initial_5 A B : hassert :=
-  HA_and (term_eq (T_local 6%num) (T_const (crt.Vi64 0))) (inverse_initial_4 A B).
+  HA_and (term_eq (T_local 6%num) (T_const (main.Vi64 0))) (inverse_initial_4 A B).
 Definition inverse_initial_6 A B : hassert :=
-  HA_and (term_eq (T_local 7%num) (T_const (crt.Vi64 1))) (inverse_initial_5 A B).
+  HA_and (term_eq (T_local 7%num) (T_const (main.Vi64 1))) (inverse_initial_5 A B).
 Definition inverse_prologue_code : seq basic_instruction :=
   [:: BI_local_get 1%num;
       BI_local_set 2%num;
       BI_local_get 0%num;
       BI_local_set 3%num;
-      BI_const_num (crt.Vi64 1);
+      BI_const_num (main.Vi64 1);
       BI_local_set 4%num;
-      BI_const_num (crt.Vi64 0);
+      BI_const_num (main.Vi64 0);
       BI_local_set 5%num;
-      BI_const_num (crt.Vi64 0);
+      BI_const_num (main.Vi64 0);
       BI_local_set 6%num;
-      BI_const_num (crt.Vi64 1);
+      BI_const_num (main.Vi64 1);
       BI_local_set 7%num].
 Lemma inverse_prologue_sem A B :
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (inverse_entry A B))
+  sem_triple (triv_ctx main.main) (AS_base [::] (inverse_entry A B))
     inverse_prologue_code (AS_base [::] (inverse_head A B (eea_init A B))).
 Proof.
   rewrite /inverse_prologue_code.
   apply: (sem_seq (es1 := [:: BI_local_get 1%num])
-    (Q := AS_base [:: T_const (crt.Vi64 A)] (inverse_entry A B))).
+    (Q := AS_base [:: T_const (main.Vi64 A)] (inverse_entry A B))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 2%num])
     (Q := AS_base [::] (inverse_initial_1 A B))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 0%num])
-    (Q := AS_base [:: T_const (crt.Vi64 B)] (inverse_initial_1 A B))).
+    (Q := AS_base [:: T_const (main.Vi64 B)] (inverse_initial_1 A B))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 3%num])
     (Q := AS_base [::] (inverse_initial_2 A B))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
-  apply: (sem_seq (es1 := [:: BI_const_num (crt.Vi64 1)])
-    (Q := AS_base [:: T_const (crt.Vi64 1)] (inverse_initial_2 A B))).
+  apply: (sem_seq (es1 := [:: BI_const_num (main.Vi64 1)])
+    (Q := AS_base [:: T_const (main.Vi64 1)] (inverse_initial_2 A B))).
   { exact: sem_const_framed. }
   apply: (sem_seq (es1 := [:: BI_local_set 4%num])
     (Q := AS_base [::] (inverse_initial_3 A B))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
-  apply: (sem_seq (es1 := [:: BI_const_num (crt.Vi64 0)])
-    (Q := AS_base [:: T_const (crt.Vi64 0)] (inverse_initial_3 A B))).
+  apply: (sem_seq (es1 := [:: BI_const_num (main.Vi64 0)])
+    (Q := AS_base [:: T_const (main.Vi64 0)] (inverse_initial_3 A B))).
   { exact: sem_const_framed. }
   apply: (sem_seq (es1 := [:: BI_local_set 5%num])
     (Q := AS_base [::] (inverse_initial_4 A B))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
-  apply: (sem_seq (es1 := [:: BI_const_num (crt.Vi64 0)])
-    (Q := AS_base [:: T_const (crt.Vi64 0)] (inverse_initial_4 A B))).
+  apply: (sem_seq (es1 := [:: BI_const_num (main.Vi64 0)])
+    (Q := AS_base [:: T_const (main.Vi64 0)] (inverse_initial_4 A B))).
   { exact: sem_const_framed. }
   apply: (sem_seq (es1 := [:: BI_local_set 6%num])
     (Q := AS_base [::] (inverse_initial_5 A B))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
-  apply: (sem_seq (es1 := [:: BI_const_num (crt.Vi64 1)])
-    (Q := AS_base [:: T_const (crt.Vi64 1)] (inverse_initial_5 A B))).
+  apply: (sem_seq (es1 := [:: BI_const_num (main.Vi64 1)])
+    (Q := AS_base [:: T_const (main.Vi64 1)] (inverse_initial_5 A B))).
   { exact: sem_const_framed. }
   apply: (sem_seq (es1 := [:: BI_local_set 7%num])
     (Q := AS_base [::] (inverse_initial_6 A B))).
@@ -851,14 +851,14 @@ Proof.
     heap_unpack. heap_build.
   - exact: sem_nil_same.
 Qed.
-Lemma inverse_body_shape : modfunc_body crt.inverse_coprime =
+Lemma inverse_body_shape : modfunc_body main.inverse_coprime =
   inverse_prologue_code ++
   [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) inverse_loop_code];
       BI_local_get 6%num; BI_local_get 1%num; BI_call 1%num; BI_return; BI_unreachable].
 Proof. by []. Qed.
 Lemma inverse_prefix_sem A B final : eea_inputs A B ->
   eea_run (eea_init A B) final ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (inverse_entry A B))
+  sem_triple (triv_ctx main.main) (AS_base [::] (inverse_entry A B))
     (inverse_prologue_code ++
       [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) inverse_loop_code]])
     (AS_base [::] (inverse_head A B final)).
@@ -878,14 +878,14 @@ Definition inverse_runtime_mx P es Qn Qr Qb :=
   forall f, f_inst f = crt_inst -> sem_mx_at crt_store f P es Qn Qr Qb.
 
 Lemma inverse_runtime_triple_of_triple P es Q :
-  sem_triple (triv_ctx crt.crt) P es Q -> inverse_runtime_triple P es Q.
+  sem_triple (triv_ctx main.main) P es Q -> inverse_runtime_triple P es Q.
 Proof.
   move=> H f Hinst. apply: sem_triple_at_of_triple; first exact H.
   by rewrite /frame_agrees Hinst /crt_inst /triv_ctx.
 Qed.
 
 Lemma inverse_runtime_mx_of_mx P es Qn Qr Qb :
-  sem_mx (triv_ctx crt.crt) P es Qn Qr Qb -> inverse_runtime_mx P es Qn Qr Qb.
+  sem_mx (triv_ctx main.main) P es Qn Qr Qb -> inverse_runtime_mx P es Qn Qr Qb.
 Proof.
   move=> H f Hinst. apply: sem_mx_at_of_mx; first exact H.
   by rewrite /frame_agrees Hinst /crt_inst /triv_ctx.
@@ -921,8 +921,8 @@ Proof.
 Qed.
 
 Lemma inverse_entry_entails A B :
-  aentails (AS_base [::] (HA_and (args_pinned [:: crt.Vi64 B; crt.Vi64 A] 0%num)
-    (func_pre_h crt.crt crt.inverse_coprime))) (AS_base [::] (inverse_entry A B)).
+  aentails (AS_base [::] (HA_and (args_pinned [:: main.Vi64 B; main.Vi64 A] 0%num)
+    (func_pre_h main.main main.inverse_coprime))) (AS_base [::] (inverse_entry A B)).
 Proof.
   move=> V [vs h] /= [Hs [[P0 [P1 _]] [[T0 [T1 _]] [T2 [T3 [T4 [T5 [T6 [T7 [T8 [T9 [T10 [T11 [T12 [T13 [T14 _]]]]]]]]]]]]]]]].
   split; first exact Hs.
@@ -944,42 +944,42 @@ Proof.
   exact I.
 Qed.
 Lemma inverse_body_to_computation B A u :
-  inverse_runtime_mx (AS_base [::] (inverse_entry A B)) (modfunc_body crt.inverse_coprime)
-    (AS_base [:: T_const (crt.Vi64 u)] HA_true)
-    (AS_base [:: T_const (crt.Vi64 u)] HA_true)
-    (AS_base [:: T_const (crt.Vi64 u)] HA_true) ->
-  fun_computes_at crt_runtime 2%nat [:: crt.Vi64 B; crt.Vi64 A] [:: crt.Vi64 u].
+  inverse_runtime_mx (AS_base [::] (inverse_entry A B)) (modfunc_body main.inverse_coprime)
+    (AS_base [:: T_const (main.Vi64 u)] HA_true)
+    (AS_base [:: T_const (main.Vi64 u)] HA_true)
+    (AS_base [:: T_const (main.Vi64 u)] HA_true) ->
+  fun_computes_at crt_runtime 2%nat [:: main.Vi64 B; main.Vi64 A] [:: main.Vi64 u].
 Proof.
   move=> Hbody.
-  change (args_typed [:: crt.Vi64 B; crt.Vi64 A] [:: T_num T_i64; T_num T_i64] /\
-    results_typed [:: crt.Vi64 u] [:: T_num T_i64] /\
-    exists defaults, default_vals (modfunc_locals crt.inverse_coprime) = Some defaults /\
-      sem_mx_at crt_store (activation_frame crt_runtime [:: crt.Vi64 B; crt.Vi64 A] defaults)
-        (AS_base [::] (HA_and (args_pinned [:: crt.Vi64 B; crt.Vi64 A] 0%num)
-          (func_pre_h crt.crt crt.inverse_coprime)))
-        (modfunc_body crt.inverse_coprime)
-        (AS_base [:: T_const (crt.Vi64 u)] HA_true)
-        (AS_base [:: T_const (crt.Vi64 u)] HA_true)
-        (AS_base [:: T_const (crt.Vi64 u)] HA_true)).
+  change (args_typed [:: main.Vi64 B; main.Vi64 A] [:: T_num T_i64; T_num T_i64] /\
+    results_typed [:: main.Vi64 u] [:: T_num T_i64] /\
+    exists defaults, default_vals (modfunc_locals main.inverse_coprime) = Some defaults /\
+      sem_mx_at crt_store (activation_frame crt_runtime [:: main.Vi64 B; main.Vi64 A] defaults)
+        (AS_base [::] (HA_and (args_pinned [:: main.Vi64 B; main.Vi64 A] 0%num)
+          (func_pre_h main.main main.inverse_coprime)))
+        (modfunc_body main.inverse_coprime)
+        (AS_base [:: T_const (main.Vi64 u)] HA_true)
+        (AS_base [:: T_const (main.Vi64 u)] HA_true)
+        (AS_base [:: T_const (main.Vi64 u)] HA_true)).
   split; first by repeat split. split; first by repeat split.
-  exists [:: VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0); VAL_num (crt.Vi64 0)].
+  exists [:: VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0); VAL_num (main.Vi64 0)].
   split; first by [].
   move=> hs V vs h HP Hr. apply: Hbody; [by [] | | exact Hr].
   exact: (inverse_entry_entails HP).
 Qed.
 Lemma inverse_reads_sem A B e :
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (inverse_head A B e))
+  sem_triple (triv_ctx main.main) (AS_base [::] (inverse_head A B e))
     [:: BI_local_get 6%num; BI_local_get 1%num]
-    (AS_base [:: T_const (crt.Vi64 (t0 e)); T_const (crt.Vi64 A)] (inverse_head A B e)).
+    (AS_base [:: T_const (main.Vi64 (t0 e)); T_const (main.Vi64 A)] (inverse_head A B e)).
 Proof.
   apply: (sem_seq (es1 := [:: BI_local_get 6%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (t0 e))] (inverse_head A B e))).
+    (Q := AS_base [:: T_const (main.Vi64 (t0 e))] (inverse_head A B e))).
   - apply: get_pinned_frame. pinned_tac.
   - apply: get_pinned_frame. pinned_tac.
 Qed.
 Theorem inverse_machine_computes B A : eea_inputs A B -> Z.gcd A B = 1 ->
-  fun_computes_at crt_runtime 2%nat [:: crt.Vi64 B; crt.Vi64 A]
-    [:: crt.Vi64 (crt_inverse_Z B A)].
+  fun_computes_at crt_runtime 2%nat [:: main.Vi64 B; main.Vi64 A]
+    [:: main.Vi64 (crt_inverse_Z B A)].
 Proof.
   move=> Hin Hcop.
   have Hinitial := eea_init_proved A B Hin.
@@ -1000,9 +1000,9 @@ Proof.
     ((inverse_prologue_code ++
       [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) inverse_loop_code]]) ++
       [:: BI_local_get 6%num; BI_local_get 1%num; BI_call 1%num; BI_return; BI_unreachable])
-    (AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)
-    (AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)
-    (AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)).
+    (AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)
+    (AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)
+    (AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)).
   apply: (inverse_runtime_mx_after_triple
     (es1 := inverse_prologue_code ++
       [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) inverse_loop_code]])
@@ -1010,17 +1010,17 @@ Proof.
   - apply: inverse_runtime_triple_of_triple. exact: (inverse_prefix_sem Hin Hrun).
   - apply: (inverse_runtime_mx_after_triple
       (es1 := [:: BI_local_get 6%num; BI_local_get 1%num])
-      (Q1 := AS_base [:: T_const (crt.Vi64 (t0 final)); T_const (crt.Vi64 A)] (inverse_head A B final))).
+      (Q1 := AS_base [:: T_const (main.Vi64 (t0 final)); T_const (main.Vi64 A)] (inverse_head A B final))).
     + apply: inverse_runtime_triple_of_triple. exact: inverse_reads_sem.
     + apply: (inverse_runtime_mx_after_triple (es1 := [:: BI_call 1%num])
-        (Q1 := AS_base [:: T_const (crt.Vi64 (t0 final mod A))] (inverse_head A B final))).
+        (Q1 := AS_base [:: T_const (main.Vi64 (t0 final mod A))] (inverse_head A B final))).
       * move=> f Hinst. exact: (crt_normalize_call Hinst Wu HA).
       * apply: inverse_runtime_mx_of_mx.
         apply: (sem_mx_conseq
-          (P' := AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)
-          (Qn' := AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)
-          (Qr' := AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)
-          (Qb' := AS_base [:: T_const (crt.Vi64 (t0 final mod A))] HA_true)).
+          (P' := AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)
+          (Qn' := AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)
+          (Qr' := AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)
+          (Qb' := AS_base [:: T_const (main.Vi64 (t0 final mod A))] HA_true)).
         -- move=> V [vs h] [Hs _]. by split.
         -- by [].
         -- by [].

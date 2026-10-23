@@ -72,7 +72,7 @@ def audit_assumptions(output, count, allowed):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--verifier', type=Path, default=Path('/workspaces/wasm-verifier'))
-    parser.add_argument('--artifact-dir', type=Path, default=ROOT / 'build/crt')
+    parser.add_argument('--artifact-dir', type=Path, default=ROOT / 'out')
     parser.add_argument('--out', type=Path, default=ROOT / 'build/wasm-proofs')
     args = parser.parse_args()
     if not Path('/.dockerenv').exists():
@@ -82,9 +82,11 @@ def main():
     report_path = out / 'report.json'
     report_path.unlink(missing_ok=True)
     manifest = json.loads((artifacts / 'manifest.json').read_text())
-    if manifest['mode'] != 'proof' or manifest['source']['sha256'] != sha256(ROOT / 'src/crt.inf'):
-        parser.error('Stale source manifest: rebuild src/crt.inf in proof mode')
-    for name in ('crt.v', 'crt.wasm'):
+    if manifest['mode'] != 'proof' or manifest['source']['sha256'] != sha256(ROOT / 'src/main.inf'):
+        parser.error('Stale source manifest: rebuild src/main.inf in proof mode')
+    if manifest['project']['sha256'] != sha256(ROOT / 'Inference.toml'):
+        parser.error('Stale project manifest: rerun python3 scripts/build.py')
+    for name in ('main.v', 'main.wasm'):
         if sha256(artifacts / name) != manifest['artifacts'][name]:
             parser.error('Stale or modified artifact: ' + name)
 
@@ -111,7 +113,7 @@ def main():
         ((companions if source in proof_sources else math) / source.name).write_bytes(data)
     if 'CRTModule' in modules:
         declarations.append('CRTWasm.CRTModule.crt_runtime')
-    shutil.copyfile(artifacts / 'crt.v', generated / 'crt.v')
+    shutil.copyfile(artifacts / 'main.v', generated / 'main.v')
     flags = ['-R', str(verifier / '_build/default/theories'), 'WasmVerifier',
              '-Q', str(math), 'CRT', '-Q', str(generated), 'CRTGenerated',
              '-Q', str(companions), 'CRTWasm']
@@ -124,22 +126,22 @@ def main():
             raise RuntimeError(f'{command[0]} failed; see {out / logfile}\n{result.stdout[-6000:]}')
         return result.stdout
 
-    for source in [math / s.name for s in sources] + [generated / 'crt.v'] + [companions / s.name for s in proof_sources]:
+    for source in [math / s.name for s in sources] + [generated / 'main.v'] + [companions / s.name for s in proof_sources]:
         print('Checking ' + source.name, flush=True)
         run(['coqc', *flags, str(source)], source.stem + '.log')
     audit = 'Set Printing All.\nSet Printing Width 1000000.\n'
     audit += '\n'.join(f'Require Import CRTWasm.{module}.' for module in modules) + '\n'
     if 'CRTModule' in modules:
         audit += ('Check (CRTWasm.CRTModule.checked_valid_module :\n'
-                  '  Verifier.ValidModule CRTGenerated.crt.crt).\n')
+                  '  Verifier.ValidModule CRTGenerated.main.main).\n')
     audit += '''From mathcomp Require Import ssreflect eqtype.
 From Wasm Require Import host.
 Section ExactTargets.
 Context `{ho : host}.
 Check (CRTWasm.CRTRealization.checked_helper_contracts :
-  Verifier.ValidSpec CRTGenerated.crt.crt CRTGenerated.crt.crt__HelperContracts_specs).
+  Verifier.ValidSpec CRTGenerated.main.main CRTGenerated.main.main__HelperContracts_specs).
 Check (CRTWasm.CRTRealization.checked_public_contracts :
-  Verifier.ValidSpec CRTGenerated.crt.crt CRTGenerated.crt.crt__PublicContracts_specs).
+  Verifier.ValidSpec CRTGenerated.main.main CRTGenerated.main.main__PublicContracts_specs).
 '''
     audit += execution_target_checks() + '\nEnd ExactTargets.\n'
     audit += '\n'.join(f'Print Assumptions {decl}.' for decl in declarations) + '\n'
@@ -153,11 +155,11 @@ Check (CRTWasm.CRTRealization.checked_public_contracts :
     # with real Coq output, in addition to the parser's unit tests.
     (out / 'RejectedCertificate.v').write_text('''From Wasm Require Import host.
 From WasmVerifier Require Import Verifier.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 Section Host.
 Context `{ho : host}.
-Theorem false_certificate : ValidModule crt.crt.
-Proof. exact crt.valid_crt. Qed.
+Theorem false_certificate : ValidModule main.main.
+Proof. exact main.valid_main. Qed.
 End Host.
 Set Printing All.
 Set Printing Width 1000000.
@@ -167,7 +169,7 @@ Print Assumptions false_certificate.
     try:
         audit_assumptions(rejected, 1, allowed)
     except ValueError as error:
-        if 'valid_crt' not in str(error):
+        if 'valid_main' not in str(error):
             raise
     else:
         raise RuntimeError('Audit accepted the generated admitted certificate')

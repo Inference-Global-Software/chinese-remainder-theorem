@@ -23,7 +23,7 @@ new axioms, and unchecked proof tactics; regression tests inject an axiom and an
 admitted theorem and require rejection.
 
 ```sh
-make proofs
+python3 scripts/check_proofs.py
 ```
 
 This command uses only the standard Coq integer library, copies inputs to
@@ -37,8 +37,8 @@ than trusting a theorem name alone.
 
 - `checked_model_realized`: each application in the mathematical interpretation
   is backed by execution of its actual emitted Wasm body in `crt_runtime`.
-- `checked_helper_contracts`: `ValidSpec crt.crt crt.crt__HelperContracts_specs`.
-- `checked_public_contracts`: `ValidSpec crt.crt crt.crt__PublicContracts_specs`.
+- `checked_helper_contracts`: `ValidSpec main.main main.main__HelperContracts_specs`.
+- `checked_public_contracts`: `ValidSpec main.main main.main__PublicContracts_specs`.
 - `checked_crt_certificate`: the independently proved `ValidModule` together
   with both exact `ValidSpec` propositions.
 
@@ -67,13 +67,13 @@ structurally valid module/runtime.
 Run the checker inside the [real verifier container](../scripts/wasm_environment/README.md):
 
 ```sh
-make wasm-proofs
+python3 scripts/check_wasm_proofs.py
 ```
 
 It recompiles isolated source copies, checks the exact certificate types,
 audits every companion theorem/lemma, and independently runs `coqchk`.
 It rejects unapproved transitive assumptions and proves the rejection works
-with a real compiled negative control. The raw generated `crt.v` contains three
+with a real compiled negative control. The raw generated `main.v` contains three
 `Admitted` skeletons; the completed proofs import its definitions but **do not
 depend on those skeletons**. Report hashes identify the checked source snapshot
 and the runtime-tested Wasm artifact.

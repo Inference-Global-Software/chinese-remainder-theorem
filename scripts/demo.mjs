@@ -29,7 +29,7 @@ try {
     return value;
   });
   const [a, m, b, n] = values;
-  const bytes = await readFile(new URL('../build/crt/crt.wasm', import.meta.url));
+  const bytes = await readFile(new URL('../out/main.wasm', import.meta.url));
   const { instance } = await WebAssembly.instantiate(bytes, {});
   const x = instance.exports.crt_solve(a, m, b, n);
   if (x === -2n) {
@@ -42,6 +42,6 @@ try {
 } catch (error) {
   if (error instanceof RangeError) emit({ status: 'invalid', message: error.message }, 2);
   else emit({ status: 'error', message: error.code === 'ENOENT'
-    ? 'Build the Wasm artifact first: make build INFC=/path/to/infc'
+    ? 'Build the Wasm artifact first: infs build'
     : error.message }, 3);
 }

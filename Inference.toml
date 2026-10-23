@@ -1,0 +1,12 @@
+[package]
+name = "chinese-remainder-theorem"
+version = "0.1.0"
+infc_version = "0.0.6"
+description = "Generalized Chinese Remainder Theorem with proved WebAssembly contracts"
+
+[build]
+target = "wasm32"
+mode = "proof"
+
+[verification]
+output-dir = "out"

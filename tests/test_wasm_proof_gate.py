@@ -18,9 +18,9 @@ class WasmProofGateTests(unittest.TestCase):
         self.assertEqual(self.gate.audit_assumptions(
             'Axioms:\nClassical_Prop.classic : forall P : Prop, P \\/ ~ P\n', 1, allowed),
             ['Classical_Prop.classic'])
-        with self.assertRaisesRegex(ValueError, 'valid_crt'):
+        with self.assertRaisesRegex(ValueError, 'valid_main'):
             self.gate.audit_assumptions(
-                'Axioms:\ncrt.valid_crt : ValidModule crt.crt\n', 1, allowed)
+                'Axioms:\nmain.valid_main : ValidModule main.main\n', 1, allowed)
 
     def test_unparseable_or_missing_assumption_output_is_rejected(self):
         for output in ('', 'Axioms:\n', 'Axioms:\n  unexpected layout\n'):

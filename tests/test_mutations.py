@@ -2,7 +2,6 @@
 import json
 import os
 from pathlib import Path
-import shutil
 import subprocess
 import unittest
 
@@ -11,9 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class MutationTests(unittest.TestCase):
     def test_faults_have_concrete_counterexamples(self):
-        source = (ROOT / 'src/crt.inf').read_text()
-        compiler = shutil.which(os.environ.get('INFC', 'infc'))
-        self.assertIsNotNone(compiler, 'Test requires a real Inference compiler')
+        source = (ROOT / 'src/main.inf').read_text()
         mutations = [
             ('missing_compatibility', 'if delta % g != 0 { return -1; }', '',
              (2, 6, 4, 9), -1),
@@ -26,17 +23,18 @@ class MutationTests(unittest.TestCase):
             with self.subTest(mutation=name):
                 self.assertEqual(source.count(old), 1, 'Mutation no longer selects one site')
                 folder = ROOT / 'build/mutations' / name
-                folder.mkdir(parents=True, exist_ok=True)
-                entry = folder / 'fault.inf'
+                (folder / 'src').mkdir(parents=True, exist_ok=True)
+                (folder / 'Inference.toml').write_bytes((ROOT / 'Inference.toml').read_bytes())
+                entry = folder / 'src/main.inf'
                 entry.write_text(source.replace(old, replacement))
-                compilation = subprocess.run([compiler, str(entry), '--mode', 'proof',
-                                              '--out-dir', str(folder)], capture_output=True, text=True)
+                compilation = subprocess.run([os.environ.get('INFS', 'infs'), 'build'],
+                                             cwd=folder, capture_output=True, text=True)
                 self.assertEqual(compilation.returncode, 0, compilation.stdout + compilation.stderr)
                 vectors = folder / 'vectors.json'
                 vectors.write_text(json.dumps([{'fn': 'crt_solve', 'args': list(map(str, args)),
                                                 'expected': str(expected)}]))
                 outcome = subprocess.run(['node', str(ROOT / 'scripts/check_runtime.mjs'),
-                                          str(folder / 'fault.wasm'), str(vectors)],
+                                          str(folder / 'out/main.wasm'), str(vectors)],
                                          capture_output=True, text=True)
                 self.assertNotEqual(outcome.returncode, 0, 'Fault escaped its counterexample')
                 self.assertIn('AssertionError', outcome.stderr)

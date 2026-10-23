@@ -60,7 +60,7 @@ For example, compile the generated module from the project root in-container:
 docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
   opam exec -- coqc \
   -R /workspaces/wasm-verifier/_build/default/theories WasmVerifier \
-  -Q build/crt CRTGenerated build/crt/crt.v
+  -Q out CRTGenerated out/main.v
 ```
 
 `WASM_VERIFIER_PATH` in the image points to the compiled real theory. Follow the
@@ -68,11 +68,11 @@ project's proof instructions for the required build order and companion proof
 namespace flags. Rebuild pure Coq modules in this container before importing
 them into the generated-Wasm proof modules.
 
-Check the full CRT certificate (after building `build/crt` with Inference):
+Check the full CRT certificate (after running `python3 scripts/build.py` on the host):
 
 ```sh
 docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
-  opam exec -- make wasm-proofs
+  opam exec -- python3 scripts/check_wasm_proofs.py
 ```
 
 This includes exact generated contract checks, transitive assumption auditing,

@@ -1,4 +1,4 @@
-(* Proofs over the exact compiler-emitted definitions in build/crt/crt.v.
+(* Proofs over the exact compiler-emitted definitions in out/main.v.
    The generated skeleton theorems are never used by these endpoints. *)
 From Coq Require Import ZArith NArith Lia List.
 From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
@@ -7,7 +7,7 @@ From WasmVerifier Require Import Assertions Triples Semantics Pure Control Multi
   NumericDischarge Automation Activation Verifier MultiExitK Loop.
 From WasmVerifier.examples Require Import Issue316OverflowExample.
 From CRT Require Import CRTStatements CRTLoops.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTLoopRules.
 
 Set Implicit Arguments.
@@ -32,8 +32,8 @@ Proof. move=> Hz Hd. exact (proj1 (proj2 (proj2 (normalize_proved z d Hz Hd)))).
 (* WasmCert expresses rem_s using a floor remainder and a sign correction.
    This bridge proves that its value is exactly Coq's truncating remainder. *)
 Lemma crt_i64_rem_exact z d : word z -> 1 <= d <= M ->
-  app_binop (Binop_i (BOI_rem SX_S)) (crt.Vi64 z) (crt.Vi64 d) =
-  Some (crt.Vi64 (Z.rem z d)).
+  app_binop (Binop_i (BOI_rem SX_S)) (main.Vi64 z) (main.Vi64 d) =
+  Some (main.Vi64 (Z.rem z d)).
 Proof.
   move=> Hz Hd.
   have Hdw := crt_modulus_word Hd.
@@ -45,7 +45,7 @@ Proof.
     have Hd0 : d = 0 by apply/eqP.
     lia. }
   have Hmodsign : (z mod d >=? 0) = true by apply/Z.geb_le; lia.
-  rewrite /crt.Vi64 /app_binop /app_binop_i /= /Wasm_int.Int64.irem_s /=.
+  rewrite /main.Vi64 /app_binop /app_binop_i /= /Wasm_int.Int64.irem_s /=.
   rewrite (crt_i64_signed_repr Hz) (crt_i64_signed_repr Hdw) Hdz.
   case Hmz: (z mod d == 0).
   - have Hmzero : z mod d = 0 by apply/eqP.
@@ -71,7 +71,7 @@ Proof.
 Qed.
 
 Lemma crt_i64_lt_zero z : word z ->
-  app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 z) (crt.Vi64 0) = (z <? 0).
+  app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 z) (main.Vi64 0) = (z <? 0).
 Proof.
   move=> Hz. rewrite i64_lt_s_app /Wasm_int.Int64.lt.
   have Hzero : word 0 by unfold word, i64_min, i64_max; lia.
@@ -113,33 +113,33 @@ Local Notation NormEntry z d :=
     (HA_and (HA_defined (T_local 3%num))
       (HA_and (HA_defined (T_local 4%num))
         (HA_and (HA_defined (T_local 5%num))
-          (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 z)))
-                  (term_eq (T_local 1%num) (T_const (crt.Vi64 d)))))))).
+          (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 z)))
+                  (term_eq (T_local 1%num) (T_const (main.Vi64 d)))))))).
 Local Notation NormRem z d :=
-  (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 (Z.rem z d))))
+  (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 (Z.rem z d))))
     (NormEntry z d)).
 Local Notation NormB z d :=
-  (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 d))) (NormRem z d)).
+  (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 d))) (NormRem z d)).
 Local Notation NormA z d :=
-  (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 (Z.rem z d)))) (NormB z d)).
+  (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 (Z.rem z d)))) (NormB z d)).
 Local Notation NormR z d :=
-  (HA_and (term_eq (T_local 5%num) (T_const (crt.Vi64 (Z.rem z d + d)))) (NormA z d)).
+  (HA_and (term_eq (T_local 5%num) (T_const (main.Vi64 (Z.rem z d + d)))) (NormA z d)).
 
 Lemma normalize_prologue_sem z d : word z -> 1 <= d <= M ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (NormEntry z d))
+  sem_triple (triv_ctx main.main) (AS_base [::] (NormEntry z d))
     [:: BI_local_get 0%num; BI_local_get 1%num;
         BI_binop T_i64 (Binop_i (BOI_rem SX_S)); BI_local_set 2%num]
     (AS_base [::] (NormRem z d)).
 Proof.
   move=> Hz Hd.
   apply: (sem_seq (es1 := [:: BI_local_get 0%num])
-    (Q := AS_base [:: T_const (crt.Vi64 z)] (NormEntry z d))).
+    (Q := AS_base [:: T_const (main.Vi64 z)] (NormEntry z d))).
   - apply: get_pinned_frame. pinned_tac.
   - apply: (sem_seq (es1 := [:: BI_local_get 1%num])
-      (Q := AS_base [:: T_const (crt.Vi64 z); T_const (crt.Vi64 d)] (NormEntry z d))).
+      (Q := AS_base [:: T_const (main.Vi64 z); T_const (main.Vi64 d)] (NormEntry z d))).
     + apply: get_pinned_frame. pinned_tac.
     + apply: (sem_seq (es1 := [:: BI_binop T_i64 (Binop_i (BOI_rem SX_S))])
-        (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d))] (NormEntry z d))).
+        (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d))] (NormEntry z d))).
       * apply: binop_consts; [by vm_compute | by [] | by [] | exact: crt_i64_rem_exact].
       * apply: sem_local_set_const_frame; [stable_tac | present_tac].
 Qed.
@@ -147,9 +147,9 @@ Qed.
 Definition normalize_guard (z d : Z) : bool :=
   app_relop (Relop_i ROI_ne)
     (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S))
-      (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d)))))
+      (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d)))))
     (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S))
-      (crt.Vi64 d) (crt.Vi64 0)))).
+      (main.Vi64 d) (main.Vi64 0)))).
 
 Lemma normalize_guard_false z d : word z -> 1 <= d <= M ->
   Z.rem z d < 0 -> normalize_guard z d = false.
@@ -170,12 +170,12 @@ Proof.
 Qed.
 
 Lemma normalize_add_prefix_sem z d : word z -> 1 <= d <= M ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (NormRem z d))
+  sem_triple (triv_ctx main.main) (AS_base [::] (NormRem z d))
     [:: BI_local_get 2%num; BI_local_get 1%num; BI_local_set 4%num;
         BI_local_tee 3%num; BI_local_get 4%num;
         BI_binop T_i64 (Binop_i BOI_add); BI_local_tee 5%num;
         BI_local_get 3%num; BI_relop T_i64 (Relop_i (ROI_lt SX_S));
-        BI_local_get 4%num; BI_const_num (crt.Vi64 0);
+        BI_local_get 4%num; BI_const_num (main.Vi64 0);
         BI_relop T_i64 (Relop_i (ROI_lt SX_S)); BI_relop T_i32 (Relop_i ROI_ne)]
     (AS_base [:: T_const (VAL_int32 (wasm_bool (normalize_guard z d)))] (NormR z d)).
 Proof.
@@ -183,23 +183,23 @@ Proof.
   have Hrw := crt_rem_word Hz Hd.
   have Hdw := crt_modulus_word Hd.
   apply: (sem_seq (es1 := [:: BI_local_get 2%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d))] (NormRem z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d))] (NormRem z d))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 1%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d)); T_const (crt.Vi64 d)] (NormRem z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d)); T_const (main.Vi64 d)] (NormRem z d))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 4%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d))] (NormB z d))).
-  { apply: (sem_frame_consts (vf := [:: crt.Vi64 (Z.rem z d)])).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d))] (NormB z d))).
+  { apply: (sem_frame_consts (vf := [:: main.Vi64 (Z.rem z d)])).
     apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_tee 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d))] (NormA z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d))] (NormA z d))).
   { apply: sem_local_tee_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 4%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d)); T_const (crt.Vi64 d)] (NormA z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d)); T_const (main.Vi64 d)] (NormA z d))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_binop T_i64 (Binop_i BOI_add)])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d + d))] (NormA z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d + d))] (NormA z d))).
   { apply: binop_consts; [by vm_compute | by [] | by [] |].
     change (app_binop (Binop_i BOI_add)
       (VAL_int64 (Wasm_int.Int64.repr (Z.rem z d)))
@@ -207,23 +207,23 @@ Proof.
       Some (VAL_int64 (Wasm_int.Int64.repr (Z.rem z d + d)))).
     rewrite -(crt_i64_add_repr Hrw Hdw). exact: i64_add_some. }
   apply: (sem_seq (es1 := [:: BI_local_tee 5%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d + d))] (NormR z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d + d))] (NormR z d))).
   { apply: sem_local_tee_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (Z.rem z d + d)); T_const (crt.Vi64 (Z.rem z d))] (NormR z d))).
+    (Q := AS_base [:: T_const (main.Vi64 (Z.rem z d + d)); T_const (main.Vi64 (Z.rem z d))] (NormR z d))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_relop T_i64 (Relop_i (ROI_lt SX_S))])
-    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d)))))] (NormR z d))).
+    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d)))))] (NormR z d))).
   { apply: relop_consts; by []. }
   apply: (sem_seq (es1 := [:: BI_local_get 4%num])
-    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d))))); T_const (crt.Vi64 d)] (NormR z d))).
+    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d))))); T_const (main.Vi64 d)] (NormR z d))).
   { apply: get_pinned_frame. pinned_tac. }
-  apply: (sem_seq (es1 := [:: BI_const_num (crt.Vi64 0)])
-    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d))))); T_const (crt.Vi64 d); T_const (crt.Vi64 0)] (NormR z d))).
+  apply: (sem_seq (es1 := [:: BI_const_num (main.Vi64 0)])
+    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d))))); T_const (main.Vi64 d); T_const (main.Vi64 0)] (NormR z d))).
   { exact: sem_const_framed. }
   apply: (sem_seq (es1 := [:: BI_relop T_i64 (Relop_i (ROI_lt SX_S))])
-    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d))))); T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 d) (crt.Vi64 0))))] (NormR z d))).
-  { apply: (sem_frame_consts (vf := [:: VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (crt.Vi64 (Z.rem z d + d)) (crt.Vi64 (Z.rem z d))))])).
+    (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d))))); T_const (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 d) (main.Vi64 0))))] (NormR z d))).
+  { apply: (sem_frame_consts (vf := [:: VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S)) (main.Vi64 (Z.rem z d + d)) (main.Vi64 (Z.rem z d))))])).
     apply: relop_consts; by []. }
   apply: relop_consts; by [].
 Qed.
@@ -286,15 +286,15 @@ Definition normalize_then : seq basic_instruction :=
       BI_local_tee 3%num; BI_local_get 4%num;
       BI_binop T_i64 (Binop_i BOI_add); BI_local_tee 5%num;
       BI_local_get 3%num; BI_relop T_i64 (Relop_i (ROI_lt SX_S));
-      BI_local_get 4%num; BI_const_num (crt.Vi64 0);
+      BI_local_get 4%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_lt SX_S)); BI_relop T_i32 (Relop_i ROI_ne);
       BI_if (BT_valtype None) [:: BI_unreachable] [::];
       BI_local_get 5%num; BI_return].
 
 Lemma normalize_then_sem z d Qn Qb : word z -> 1 <= d <= M ->
   Z.rem z d < 0 ->
-  sem_mx (triv_ctx crt.crt) (AS_base [::] (NormRem z d)) normalize_then
-    Qn (AS_base [:: T_const (crt.Vi64 (Z.rem z d + d))] HA_true) Qb.
+  sem_mx (triv_ctx main.main) (AS_base [::] (NormRem z d)) normalize_then
+    Qn (AS_base [:: T_const (main.Vi64 (Z.rem z d + d))] HA_true) Qb.
 Proof.
   move=> Hz Hd Hrneg.
   rewrite /normalize_then.
@@ -303,7 +303,7 @@ Proof.
       BI_local_tee 3%num; BI_local_get 4%num;
       BI_binop T_i64 (Binop_i BOI_add); BI_local_tee 5%num;
       BI_local_get 3%num; BI_relop T_i64 (Relop_i (ROI_lt SX_S));
-      BI_local_get 4%num; BI_const_num (crt.Vi64 0);
+      BI_local_get 4%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_lt SX_S)); BI_relop T_i32 (Relop_i ROI_ne)])
     (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool false))] (NormR z d))).
   - apply: sem_mx_lift.
@@ -316,17 +316,17 @@ Proof.
     + apply: crt_pinned_return. pinned_tac.
 Qed.
 
-Lemma normalize_body_shape : modfunc_body crt.normalize =
+Lemma normalize_body_shape : modfunc_body main.normalize =
   [:: BI_local_get 0%num; BI_local_get 1%num;
       BI_binop T_i64 (Binop_i (BOI_rem SX_S)); BI_local_set 2%num;
-      BI_local_get 2%num; BI_const_num (crt.Vi64 0);
+      BI_local_get 2%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_lt SX_S));
       BI_if (BT_valtype None) normalize_then [::];
       BI_local_get 2%num; BI_return; BI_unreachable].
 Proof. by []. Qed.
 
 Theorem normalize_machine_computes z d : word z -> 1 <= d <= M ->
-  fun_computes crt.crt 1%nat [:: crt.Vi64 z; crt.Vi64 d] [:: crt.Vi64 (z mod d)].
+  fun_computes main.main 1%nat [:: main.Vi64 z; main.Vi64 d] [:: main.Vi64 (z mod d)].
 Proof.
   move=> Hz Hd.
   have Hrw := crt_rem_word Hz Hd.
@@ -334,7 +334,7 @@ Proof.
   rewrite -Hnormalized.
   prepare_fun_computes
     (AS_base [::] (NormEntry z d))
-    (AS_base [:: T_const (crt.Vi64
+    (AS_base [:: T_const (main.Vi64
       (if Z.rem z d <? 0 then Z.rem z d + d else Z.rem z d))] HA_true).
   - move=> V [vs h] /= [Hs [[P0 [P1 _]] [[T0 [T1 _]] [T2 [T3 [T4 [T5 _]]]]]]].
     split; first exact Hs.
@@ -350,7 +350,7 @@ Proof.
       (Q1 := AS_base [::] (NormRem z d))).
     + apply: sem_mx_lift. exact: normalize_prologue_sem.
     + apply: (sem_mx_seq
-        (es1 := [:: BI_local_get 2%num; BI_const_num (crt.Vi64 0);
+        (es1 := [:: BI_local_get 2%num; BI_const_num (main.Vi64 0);
           BI_relop T_i64 (Relop_i (ROI_lt SX_S))])
         (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool (Z.rem z d <? 0)))] (NormRem z d))).
       * apply: sem_mx_lift. rewrite -(crt_i64_lt_zero Hrw).
@@ -417,21 +417,21 @@ Proof.
 Qed.
 
 Local Notation GcdHead a b :=
-  (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 a)))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 b)))
+  (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 a)))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 b)))
       (HA_defined (T_local 4%num)))).
 Local Notation GcdRem a b :=
-  (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (a mod b)))) (GcdHead a b)).
+  (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (a mod b)))) (GcdHead a b)).
 Local Notation GcdReadyA a b :=
   (HA_and (HA_defined (T_local 2%num))
-    (HA_and (term_eq (T_local 3%num) (T_const (crt.Vi64 b)))
-      (HA_and (term_eq (T_local 4%num) (T_const (crt.Vi64 (a mod b))))
+    (HA_and (term_eq (T_local 3%num) (T_const (main.Vi64 b)))
+      (HA_and (term_eq (T_local 4%num) (T_const (main.Vi64 (a mod b))))
         (HA_defined (T_local 4%num))))).
 Local Notation GcdSetA a b :=
-  (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 b))) (GcdReadyA a b)).
+  (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 b))) (GcdReadyA a b)).
 Local Notation GcdReadyB b :=
   (HA_and (HA_defined (T_local 3%num))
-    (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 b)))
+    (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 b)))
       (HA_defined (T_local 4%num)))).
 
 Ltac crt_heap_from HH :=
@@ -452,7 +452,7 @@ Ltac crt_heap_from HH :=
   end.
 
 Lemma gcd_update_sem a b : 1 <= a <= M -> 1 <= b <= M ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (GcdHead a b))
+  sem_triple (triv_ctx main.main) (AS_base [::] (GcdHead a b))
     [:: BI_local_get 2%num; BI_local_get 3%num;
       BI_binop T_i64 (Binop_i (BOI_rem SX_S)); BI_local_set 4%num;
       BI_local_get 3%num; BI_local_set 2%num;
@@ -464,33 +464,33 @@ Proof.
   have Hrem := crt_i64_rem_exact Haw Hb.
   rewrite (Z.rem_mod_nonneg a b ltac:(lia) ltac:(lia)) in Hrem.
   apply: (sem_seq (es1 := [:: BI_local_get 2%num])
-    (Q := AS_base [:: T_const (crt.Vi64 a)] (GcdHead a b))).
+    (Q := AS_base [:: T_const (main.Vi64 a)] (GcdHead a b))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 a); T_const (crt.Vi64 b)] (GcdHead a b))).
+    (Q := AS_base [:: T_const (main.Vi64 a); T_const (main.Vi64 b)] (GcdHead a b))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_binop T_i64 (Binop_i (BOI_rem SX_S))])
-    (Q := AS_base [:: T_const (crt.Vi64 (a mod b))] (GcdHead a b))).
+    (Q := AS_base [:: T_const (main.Vi64 (a mod b))] (GcdHead a b))).
   { apply: binop_consts; [by vm_compute | by [] | by [] | exact Hrem]. }
   apply: (sem_seq (es1 := [:: BI_local_set 4%num])
     (Q := AS_base [::] (GcdRem a b))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 3%num])
-    (Q := AS_base [:: T_const (crt.Vi64 b)] (GcdRem a b))).
+    (Q := AS_base [:: T_const (main.Vi64 b)] (GcdRem a b))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 2%num])
     (Q := AS_base [::] (GcdSetA a b))).
-  { apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 b)] (GcdReadyA a b))
+  { apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 b)] (GcdReadyA a b))
       (Q' := AS_base [::] (GcdSetA a b))).
     - move=> V [vs h] [Hs HH]. split; first exact Hs. crt_heap_from HH.
     - by [].
     - apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 4%num])
-    (Q := AS_base [:: T_const (crt.Vi64 (a mod b))] (GcdSetA a b))).
+    (Q := AS_base [:: T_const (main.Vi64 (a mod b))] (GcdSetA a b))).
   { apply: get_pinned_frame. pinned_tac. }
-  apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 (a mod b))] (GcdReadyB b))
+  apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 (a mod b))] (GcdReadyB b))
     (Q' := AS_base [::] (HA_and
-      (term_eq (T_local 3%num) (T_const (crt.Vi64 (a mod b)))) (GcdReadyB b)))).
+      (term_eq (T_local 3%num) (T_const (main.Vi64 (a mod b)))) (GcdReadyB b)))).
   - move=> V [vs h] [Hs HH]. split; first exact Hs. crt_heap_from HH.
   - move=> V [vs h] [Hs HH]. split; first exact Hs. crt_heap_from HH.
   - apply: sem_local_set_const_frame; [stable_tac | present_tac].
@@ -498,7 +498,7 @@ Qed.
 
 
 Lemma crt_i64_gt_zero z : word z ->
-  app_relop (Relop_i (ROI_gt SX_S)) (crt.Vi64 z) (crt.Vi64 0) = (0 <? z).
+  app_relop (Relop_i (ROI_gt SX_S)) (main.Vi64 z) (main.Vi64 0) = (0 <? z).
 Proof.
   move=> Hz. rewrite i64_gt_s_app /Wasm_int.Int64.lt.
   have Hzero : word 0 by unfold word, i64_min, i64_max; lia.
@@ -507,13 +507,13 @@ Proof.
 Qed.
 
 Lemma gcd_condition_sem a b : word b ->
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (GcdHead a b))
-    [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  sem_triple (triv_ctx main.main) (AS_base [::] (GcdHead a b))
+    [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz]
     (AS_base [:: T_const (VAL_int32 (wasm_bool (negb (0 <? b))))] (GcdHead a b)).
 Proof.
   move=> Hbw.
-  apply: (sem_seq (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  apply: (sem_seq (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
     BI_relop T_i64 (Relop_i (ROI_gt SX_S))])
     (Q := AS_base [:: T_const (VAL_int32 (wasm_bool (0 <? b)))] (GcdHead a b))).
   - rewrite -(crt_i64_gt_zero Hbw).
@@ -527,14 +527,14 @@ Definition gcd_update_code : seq basic_instruction :=
       BI_local_get 3%num; BI_local_set 2%num;
       BI_local_get 4%num; BI_local_set 3%num].
 Definition gcd_loop_code : seq basic_instruction :=
-  [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+  [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
       BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz;
       BI_br_if 1%num] ++ gcd_update_code ++ [:: BI_br 0%num].
 Definition crt_false_assert := AS_base [::] HA_false.
 
 Lemma gcd_loop_run_sem a b result : gcd_run a b result ->
   1 <= a <= M -> 0 <= b <= M ->
-  sem_mxk (triv_ctx crt.crt) (AS_base [::] (GcdHead a b))
+  sem_mxk (triv_ctx main.main) (AS_base [::] (GcdHead a b))
     [:: BI_loop (BT_valtype None) gcd_loop_code]
     (AS_base [::] (GcdHead result 0)) crt_false_assert
     (fun k => if k is 0%nat then AS_base [::] (GcdHead result 0) else crt_false_assert).
@@ -546,7 +546,7 @@ Proof.
     + move=> V vs h [_ Hfalse]. by case: Hfalse.
     + rewrite /gcd_loop_code.
       apply: (sem_mxk_seq
-        (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+        (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
           BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz])
         (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool true))] (GcdHead a 0))).
       * apply: sem_mxk_lift. apply: gcd_condition_sem.
@@ -565,7 +565,7 @@ Proof.
     + move=> V vs h [Hs _]. by case: Hs => <-.
     + rewrite /gcd_loop_code.
       apply: (sem_mxk_seq
-        (es1 := [:: BI_local_get 3%num; BI_const_num (crt.Vi64 0);
+        (es1 := [:: BI_local_get 3%num; BI_const_num (main.Vi64 0);
           BI_relop T_i64 (Relop_i (ROI_gt SX_S)); BI_testop T_i32 TO_eqz])
         (Q1 := AS_base [:: T_const (VAL_int32 (wasm_bool false))] (GcdHead a b))).
       * apply: sem_mxk_lift.
@@ -583,7 +583,7 @@ Qed.
 
 Lemma gcd_block_run_sem a b result : gcd_run a b result ->
   1 <= a <= M -> 0 <= b <= M ->
-  sem_mxk (triv_ctx crt.crt) (AS_base [::] (GcdHead a b))
+  sem_mxk (triv_ctx main.main) (AS_base [::] (GcdHead a b))
     [:: BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) gcd_loop_code]]
     (AS_base [::] (GcdHead result 0)) crt_false_assert (fun _ => crt_false_assert).
 Proof.
@@ -602,35 +602,35 @@ Local Notation GcdEntry m n :=
   (HA_and (HA_defined (T_local 2%num))
     (HA_and (HA_defined (T_local 3%num))
       (HA_and (HA_defined (T_local 4%num))
-        (HA_and (term_eq (T_local 0%num) (T_const (crt.Vi64 m)))
-          (term_eq (T_local 1%num) (T_const (crt.Vi64 n))))))).
+        (HA_and (term_eq (T_local 0%num) (T_const (main.Vi64 m)))
+          (term_eq (T_local 1%num) (T_const (main.Vi64 n))))))).
 Local Notation GcdInitialA m n :=
-  (HA_and (term_eq (T_local 2%num) (T_const (crt.Vi64 m))) (GcdEntry m n)).
+  (HA_and (term_eq (T_local 2%num) (T_const (main.Vi64 m))) (GcdEntry m n)).
 
 Lemma gcd_prologue_sem m n :
-  sem_triple (triv_ctx crt.crt) (AS_base [::] (GcdEntry m n))
+  sem_triple (triv_ctx main.main) (AS_base [::] (GcdEntry m n))
     [:: BI_local_get 0%num; BI_local_set 2%num;
       BI_local_get 1%num; BI_local_set 3%num]
     (AS_base [::] (GcdHead m n)).
 Proof.
   apply: (sem_seq (es1 := [:: BI_local_get 0%num])
-    (Q := AS_base [:: T_const (crt.Vi64 m)] (GcdEntry m n))).
+    (Q := AS_base [:: T_const (main.Vi64 m)] (GcdEntry m n))).
   { apply: get_pinned_frame. pinned_tac. }
   apply: (sem_seq (es1 := [:: BI_local_set 2%num])
     (Q := AS_base [::] (GcdInitialA m n))).
   { apply: sem_local_set_const_frame; [stable_tac | present_tac]. }
   apply: (sem_seq (es1 := [:: BI_local_get 1%num])
-    (Q := AS_base [:: T_const (crt.Vi64 n)] (GcdInitialA m n))).
+    (Q := AS_base [:: T_const (main.Vi64 n)] (GcdInitialA m n))).
   { apply: get_pinned_frame. pinned_tac. }
-  apply: (sem_conseq (P' := AS_base [:: T_const (crt.Vi64 n)] (GcdInitialA m n))
+  apply: (sem_conseq (P' := AS_base [:: T_const (main.Vi64 n)] (GcdInitialA m n))
     (Q' := AS_base [::] (HA_and
-      (term_eq (T_local 3%num) (T_const (crt.Vi64 n))) (GcdInitialA m n)))).
+      (term_eq (T_local 3%num) (T_const (main.Vi64 n))) (GcdInitialA m n)))).
   - by [].
   - move=> V [vs h] [Hs HH]. split; first exact Hs. crt_heap_from HH.
   - apply: sem_local_set_const_frame; [stable_tac | present_tac].
 Qed.
 
-Lemma gcd_body_shape : modfunc_body crt.gcd_positive =
+Lemma gcd_body_shape : modfunc_body main.gcd_positive =
   [:: BI_local_get 0%num; BI_local_set 2%num;
       BI_local_get 1%num; BI_local_set 3%num;
       BI_block (BT_valtype None) [:: BI_loop (BT_valtype None) gcd_loop_code];
@@ -638,7 +638,7 @@ Lemma gcd_body_shape : modfunc_body crt.gcd_positive =
 Proof. by []. Qed.
 
 Theorem gcd_machine_computes m n : moduli m n ->
-  fun_computes crt.crt 0%nat [:: crt.Vi64 m; crt.Vi64 n] [:: crt.Vi64 (Z.gcd m n)].
+  fun_computes main.main 0%nat [:: main.Vi64 m; main.Vi64 n] [:: main.Vi64 (Z.gcd m n)].
 Proof.
   move=> Hin.
   have [result [Hrun [Hresult Hword]]] := gcd_initial_run_correct m n Hin.
@@ -646,7 +646,7 @@ Proof.
   have [Hm Hn] := Hin.
   prepare_fun_computes
     (AS_base [::] (GcdEntry m n))
-    (AS_base [:: T_const (crt.Vi64 (Z.gcd m n))] HA_true).
+    (AS_base [:: T_const (main.Vi64 (Z.gcd m n))] HA_true).
   - move=> V [vs h] /= [Hs [[P0 [P1 _]] [[T0 [T1 _]] [T2 [T3 [T4 _]]]]]].
     split; first exact Hs.
     split; first by case: T2 => [w [Ew _]]; exists w.
@@ -688,8 +688,8 @@ Proof.
 Qed.
 
 Lemma crt_i64_div_positive_exact a b : 0 <= a <= M -> 1 <= b <= M ->
-  app_binop (Binop_i (BOI_div SX_S)) (crt.Vi64 a) (crt.Vi64 b) =
-    Some (crt.Vi64 (a / b)).
+  app_binop (Binop_i (BOI_div SX_S)) (main.Vi64 a) (main.Vi64 b) =
+    Some (main.Vi64 (a / b)).
 Proof.
   move=> Ha Hb.
   have Haw : word a by unfold word, M, i64_min, i64_max in *; lia.
@@ -709,8 +709,8 @@ Proof.
 Qed.
 
 Lemma crt_i64_mul_roundtrip x y : word x -> word y -> word (x * y) -> y <> 0 ->
-  app_binop (Binop_i (BOI_div SX_S)) (crt.Vi64 (x * y)) (crt.Vi64 y) =
-    Some (crt.Vi64 x).
+  app_binop (Binop_i (BOI_div SX_S)) (main.Vi64 (x * y)) (main.Vi64 y) =
+    Some (main.Vi64 x).
 Proof.
   move=> Hx Hy Hxy Hynz.
   have Hnz : Wasm_int.Int64.signed (Wasm_int.Int64.repr y) <> 0.
@@ -727,9 +727,9 @@ Qed.
 Definition crt_subtraction_guard (x y : Z) : bool :=
   app_relop (Relop_i ROI_ne)
     (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_lt SX_S))
-      (crt.Vi64 (x - y)) (crt.Vi64 x))))
+      (main.Vi64 (x - y)) (main.Vi64 x))))
     (VAL_int32 (wasm_bool (app_relop (Relop_i (ROI_gt SX_S))
-      (crt.Vi64 y) (crt.Vi64 0)))).
+      (main.Vi64 y) (main.Vi64 0)))).
 
 Lemma crt_subtraction_guard_false x y : word x -> word y -> word (x - y) ->
   crt_subtraction_guard x y = false.
@@ -748,16 +748,16 @@ Qed.
 Theorem eea_iteration_numeric_refinement A B e :
   eea_inputs A B -> eea_inv A B e -> 0 < r1 e ->
   let q := r0 e / r1 e in
-  app_binop (Binop_i (BOI_div SX_S)) (crt.Vi64 (r0 e)) (crt.Vi64 (r1 e)) =
-    Some (crt.Vi64 q) /\
-  app_binop (Binop_i (BOI_rem SX_S)) (crt.Vi64 (r0 e)) (crt.Vi64 (r1 e)) =
-    Some (crt.Vi64 (r0 e mod r1 e)) /\
+  app_binop (Binop_i (BOI_div SX_S)) (main.Vi64 (r0 e)) (main.Vi64 (r1 e)) =
+    Some (main.Vi64 q) /\
+  app_binop (Binop_i (BOI_rem SX_S)) (main.Vi64 (r0 e)) (main.Vi64 (r1 e)) =
+    Some (main.Vi64 (r0 e mod r1 e)) /\
   (s1 e <> 0 ->
-    app_binop (Binop_i (BOI_div SX_S)) (crt.Vi64 (q * s1 e)) (crt.Vi64 (s1 e)) =
-      Some (crt.Vi64 q)) /\
+    app_binop (Binop_i (BOI_div SX_S)) (main.Vi64 (q * s1 e)) (main.Vi64 (s1 e)) =
+      Some (main.Vi64 q)) /\
   (t1 e <> 0 ->
-    app_binop (Binop_i (BOI_div SX_S)) (crt.Vi64 (q * t1 e)) (crt.Vi64 (t1 e)) =
-      Some (crt.Vi64 q)) /\
+    app_binop (Binop_i (BOI_div SX_S)) (main.Vi64 (q * t1 e)) (main.Vi64 (t1 e)) =
+      Some (main.Vi64 q)) /\
   crt_subtraction_guard (s0 e) (q * s1 e) = false /\
   crt_subtraction_guard (t0 e) (q * t1 e) = false.
 Proof.

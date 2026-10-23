@@ -1,4 +1,5 @@
 /build/
+/out/
 *.vo
 *.vos
 *.vok

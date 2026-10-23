@@ -3,6 +3,14 @@
   "status": "implemented_tested_generated_contracts_and_all_execution_targets_checked",
   "build": {
     "mode": "proof",
+    "project": {
+      "path": "Inference.toml",
+      "sha256": "cd0111eba221937826d66284175f6779db2cb1d4e68ae1b8edca49ab89ea6179"
+    },
+    "infs": {
+      "version": "infs 0.0.6",
+      "sha256": "347f0d697502b5cba13cb2e1445edaef3ccd9e651cf45bd75b19c5386b0368b0"
+    },
     "compiler": {
       "version": "infc 0.0.6",
       "commit": "95db5e4",
@@ -10,12 +18,12 @@
       "sha256": "f1a21617e2dbdfdbb4dfed5c46a75edd9db6bfb787e447e1883d637d3d3f9b84"
     },
     "source": {
-      "path": "src/crt.inf",
+      "path": "src/main.inf",
       "sha256": "f0dc2f03f61a04a77ca091b48ecac392d2e065c485cb1983d4a614d9471078bf"
     },
     "artifacts": {
-      "crt.wasm": "859621c34ca1cd7ac7765fe9ceb2555ef74343311ec6cc8efa0f2b191699ba48",
-      "crt.v": "b965fbc8c23e3fc151215ca868d36fe048dd2528eb5ddc8019a13a2054c494d4"
+      "main.wasm": "33fb0a04a5084f77a847fb78af8a0b4059352da3d454ecbb64a9c37df27e5276",
+      "main.v": "f203b426cbeba45e8d4a23c7781ebda89cc08a7c32e76857682bfad3349b6b15"
     },
     "compiled_wasm_proof": "pending"
   },
@@ -28,8 +36,8 @@
     "vectors_sha256": "b18b923ffedb45361809c11bf4d786d140b45de2ed6522680b1e064df1e96452"
   },
   "tests": {
-    "methods_passed": 13,
-    "command": "make check INFC=/path/to/infc"
+    "methods_passed": 14,
+    "command": "python3 -m unittest discover -s tests -v"
   },
   "mathematical_proofs": {
     "status": "mathematical_proofs_checked",
@@ -88,7 +96,7 @@
     "allowlisted_transitive_dependencies": 10,
     "status": "passed"
   },
-  "build_status_note": "The build-only manifest leaves proof status pending; the separate generated-Wasm report below establishes the checked contracts and all five execution targets.",
+  "build_status_note": "The native infs build helper records provenance with proof status pending; the separate generated-Wasm report establishes the checked contracts and all five execution targets.",
   "generated_wasm_proofs": {
     "status": "generated_module_contracts_and_execution_targets_checked",
     "compiled_wasm_certified": true,
@@ -474,6 +482,14 @@
     "independent_kernel_check": "passed",
     "build_manifest": {
       "mode": "proof",
+      "project": {
+        "path": "Inference.toml",
+        "sha256": "cd0111eba221937826d66284175f6779db2cb1d4e68ae1b8edca49ab89ea6179"
+      },
+      "infs": {
+        "version": "infs 0.0.6",
+        "sha256": "347f0d697502b5cba13cb2e1445edaef3ccd9e651cf45bd75b19c5386b0368b0"
+      },
       "compiler": {
         "version": "infc 0.0.6",
         "commit": "95db5e4",
@@ -481,12 +497,12 @@
         "sha256": "f1a21617e2dbdfdbb4dfed5c46a75edd9db6bfb787e447e1883d637d3d3f9b84"
       },
       "source": {
-        "path": "src/crt.inf",
+        "path": "src/main.inf",
         "sha256": "f0dc2f03f61a04a77ca091b48ecac392d2e065c485cb1983d4a614d9471078bf"
       },
       "artifacts": {
-        "crt.wasm": "859621c34ca1cd7ac7765fe9ceb2555ef74343311ec6cc8efa0f2b191699ba48",
-        "crt.v": "b965fbc8c23e3fc151215ca868d36fe048dd2528eb5ddc8019a13a2054c494d4"
+        "main.wasm": "33fb0a04a5084f77a847fb78af8a0b4059352da3d454ecbb64a9c37df27e5276",
+        "main.v": "f203b426cbeba45e8d4a23c7781ebda89cc08a7c32e76857682bfad3349b6b15"
       },
       "compiled_wasm_proof": "pending"
     },
@@ -498,18 +514,18 @@
       "proofs/CRTLoops.v": "ad6abd594ce47fb6d1b899b95f626e9cfbe58aba0260eebb34641c7d324c1d71",
       "proofs/wasm/CRTAPIModel.v": "b1657077ed33011589c22872bfc4254739af5c9f27d623772ef0752f1f00be9c",
       "proofs/wasm/CRTStorePure.v": "099209687155b7ee51f9208ccf80ef44624e70c6e5a636a4489d79869f17057c",
-      "proofs/wasm/CRTModule.v": "543d0d846623e1e35a6522487a6fa8af7508e9db837cf5655f77fdb3d3e2ff90",
+      "proofs/wasm/CRTModule.v": "44956d96abcd847ec215e8047072c54b5e3f3f8cccf09d94364e3a3edb031ae0",
       "proofs/wasm/CRTLoopRules.v": "9528d667ebc17b9e996560e79d41ee209c482d62a188645156b9af198c8ca670",
-      "proofs/wasm/CRTExecution.v": "23fa7ba80749937705cd8d2bd4fb8c8bcb67e420b55fef911ebc0148f642f42a",
-      "proofs/wasm/CRTCheckedArithmetic.v": "624092771077be722614f72639d55d0a7644b171931e1a7cf0594e78e2a44a7d",
-      "proofs/wasm/CRTGeneralArithmetic.v": "2fb2813eb231ade2fd33ec3d37d355671a3843cca8148f280ee999e2cdfad41b",
-      "proofs/wasm/CRTCalls.v": "2ca80b98da468ad1c5aec05f2faa23e64902eec9ccefa9d64a55afc86b7c0d06",
-      "proofs/wasm/CRTContracts.v": "8428e22e7ef87c963fb77d8e8958e0554f249c110bcf4e60549e7a1a7772cebf",
-      "proofs/wasm/CRTInverseExecution.v": "6a08734cf08b19e73439914b7979b500d0699200771127b6a96c6e99140be2f1",
-      "proofs/wasm/CRTPublicExecution.v": "302ea943276e6c9c8bf3dc99693f3dbbd4e583f3d8894f5e624f75b22761a205",
-      "proofs/wasm/CRTSolveExecution.v": "1156d14dd8351e365fb0d121b27f9637685f0231ad85e790ee8700b88bf8f738",
-      "proofs/wasm/CRTSpecPayloads.v": "6916f2ef376c04b9fd32bab1e46ca1cfd053a9393fa544d92c3cdbd19684f366",
-      "proofs/wasm/CRTRealization.v": "2531c08328166a4319abd02128e4f8a71faa1a7a257229afa760af045560cfee",
+      "proofs/wasm/CRTExecution.v": "189b2866293c58e6ab688abbdcfced3bd67840af3503d06936c34c0d40d1650f",
+      "proofs/wasm/CRTCheckedArithmetic.v": "287f8be3f6e77ac9ad6273ea35273df9c615a4813fbc6a0b122b60525a6b376f",
+      "proofs/wasm/CRTGeneralArithmetic.v": "a172f72b28b240523489e7185de155836481d1228579c592a1bbc8f372c1ff4d",
+      "proofs/wasm/CRTCalls.v": "ee9b10151ee3efa0fb2967c66167f9e7db1a1531d6cc7eacfc14bd4d4df0844b",
+      "proofs/wasm/CRTContracts.v": "3d6e547dd015b8b4bb5711c1494dbfe9f3be6a499253e260d2c4deb472b6220f",
+      "proofs/wasm/CRTInverseExecution.v": "d669f286192b56d181e78536d2117e1da520c55b58baaaead72541784bc66170",
+      "proofs/wasm/CRTPublicExecution.v": "adbd44cc914e518bd4244790d3ba5a28fdfbb5724fefbb4f53597bc89e32b0cc",
+      "proofs/wasm/CRTSolveExecution.v": "d5af735716299f35769958c1b6040c8262dfa34c38c157ffd44be5fae4fc3427",
+      "proofs/wasm/CRTSpecPayloads.v": "6500a2ad089a8fdf21cd9a2d743ab8c86b2c354166a2276cf57e2031dc7f75ed",
+      "proofs/wasm/CRTRealization.v": "2f14590b13aac2cffba3f49f04a0691bc94b0376a4438959583d62c79090a868",
       "proofs/wasm/CRTExecutionFrames.v": "c37fe0526afff8f0f44859a01f2a4af3f32e12acb36e2736555717da99f60923",
       "proofs/wasm/CRTResourceReads.v": "45d63b838813703106817712a982b352102dfdf82f546ff380aceded4c66de1c",
       "proofs/wasm/CRTExecutionContexts.v": "4f79357c91f95715ca9c3fd2b26c6482822d061df5dcfdec3be12a8fd264bfbe",
@@ -527,7 +543,7 @@
       "proofs/wasm/CRTDirectFlatJoin.v": "2d1e32022cfb36d6554a87515c58e16986e78fe8f9d08150b14a8daba27a158e",
       "proofs/wasm/CRTExecutionComposition.v": "28b149d6dafe982525cccb32064da12eb788f2bdf89002ce0cd2f73a0e048406",
       "proofs/wasm/CRTExecutionDeterminism.v": "c0223ac11f472276c6a7f1cbf236d030237e0932ccc05b6e8ae66866fe62b018",
-      "proofs/wasm/CRTExecutionTargets.v": "f0a0b45240275ac55eb872024b02c5a234813c7f12015af5680a04ab6876cb0e"
+      "proofs/wasm/CRTExecutionTargets.v": "e94b890b28285857f6848d6607df1d1f04b06dfa715e29e614c47079973212c8"
     }
   },
   "compiled_verifier_objects": {
@@ -538,16 +554,16 @@
     "scope": "Fingerprint of actual compiled verifier objects in the checked environment; recorded separately from source-tree identity."
   },
   "environment_reproduction": {
-    "recorded_run": "Pinned base image with exact locked dependencies, clean pinned verifier source bootstrap, full upstream build and audits.",
+    "recorded_run": "Native infs project artifacts checked in the existing pinned verifier devcontainer, with exact locked dependencies, clean pinned verifier source, and its completed upstream audits.",
     "recipe_validation": "Shell/Python syntax and lock rendering/checksum verified; packaged Dockerfile not separately rebuilt from scratch."
   },
   "review": {
     "kind": "fresh-context automated review",
-    "scope": "All new operational proofs, actual-invocation adapters, exact target signatures, proof gate coverage, and documentation.",
+    "scope": "Native Inference project layout, infs build/provenance, unchanged source rename, mechanical generated-module proof renaming, tests, and public walkthrough.",
     "critical_findings": 0,
     "important_findings": 0,
     "minor_findings": 0,
-    "verification_followup": "Clean full compilation, complete assumption audit, negative control, independent coqchk, and current-source/artifact hash checks passed after the review.",
+    "verification_followup": "Corrected the stale proof comment, then reran the complete generated-Wasm compilation, exact target checks, assumption audit, admission negative control, and independent coqchk on the final source snapshot.",
     "previously_deferred_minor": "Automatically record compiled verifier object fingerprints in future checker reports; this snapshot includes a freshly measured fingerprint."
   }
 }

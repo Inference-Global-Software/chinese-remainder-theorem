@@ -8,7 +8,7 @@ From WasmVerifier Require Import Assertions Triples Semantics Pure Control Multi
   NumericDischarge Automation Activation Verifier MultiExitK Loop.
 From WasmVerifier.examples Require Import Issue316OverflowExample.
 From CRT Require Import CRTStatements CRTLoops.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTExecution.
 Set Implicit Arguments.
 Unset Strict Implicit.
