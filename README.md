@@ -1,13 +1,49 @@
 # Chinese Remainder Theorem in Inference
 
-A planned constructive implementation and formal verification of the generalized
-Chinese Remainder Theorem (CRT), written in Inference and compiled to WebAssembly.
+A constructive implementation of the generalized Chinese Remainder Theorem
+(CRT), written in Inference and compiled to WebAssembly.
 
-**Status: specifications and feasibility probes.** This repository contains the
-project design, exact theorem targets and loop invariants, an annotated research
-collection, and an unverified executable probe with Inference source contracts.
-The contracts compile in proof mode; the generated proof obligations remain open.
-There is no verified implementation or certified release yet.
+**Status: implemented, tested, and proved against the generated Wasm contracts.**
+The generalized CRT, construction, arithmetic bounds, and Euclid loop invariants
+are proved in Rocq. Execution proofs connect all five emitted function bodies to
+the mathematical model and discharge the compiler's exact module and 15 source
+contracts using the real WasmVerifier library. All five original execution
+targets are also proved: calls have terminating executions, and every normally
+returned result satisfies its contract. See [proof coverage and trust
+boundary](proofs/README.md).
+
+## Run it
+
+Requirements: Python 3.9+, Node with WebAssembly/BigInt support, and the Inference
+compiler. The recorded compiler is `infc 0.0.6`, revision `95db5e4`, ABI `1.10`.
+Checking the mathematical proofs additionally requires Coq 8.20.x (`coqc` and
+`coqchk`). Generated-Wasm proofs use the [pinned verifier container](scripts/wasm_environment/README.md).
+
+```sh
+make demo INFC=/path/to/infc
+```
+
+This compiles [src/crt.inf](src/crt.inf) in proof mode and runs the schedule example:
+
+```text
+First coincidence: 14
+Repeat period: 18
+All integer solutions: 14 + 18 * k
+```
+
+Pass your own residues and moduli in order `a m b n`:
+
+```sh
+node scripts/demo.mjs 2 6 4 9
+node scripts/demo.mjs --json 2147483646 2147483647 2147483645 2147483646
+make check INFC=/path/to/infc
+```
+
+All integer transport uses BigInt or decimal strings. The CLI rejects values
+outside signed `i64` before passing arguments to Wasm. Exit status is 0 for a
+solution, 1 for incompatibility, 2 for invalid input, and 3 for an execution/setup
+error. `make check` runs the runtime, CLI, mutation, and proof-audit tests, then
+compiles and independently checks the mathematical proofs.
 
 ## The problem
 
@@ -36,31 +72,40 @@ coincide.
 This example connects the mathematics to an executable algorithm for developers
 and gives a public demonstration a concrete question to answer.
 
-## Planned guarantees
+## Contracts
 
 - The gcd and modular-inverse routines compute their mathematical specifications.
 - Every successful CRT result satisfies both congruences.
 - Every compatible input produces a solution.
 - The returned solution is the unique one in the canonical interval.
 - A mathematical failure result means that no solution exists.
-- Execution terminates and arithmetic stays within its machine representation.
+- Calls have terminating executions and arithmetic stays within its machine representation.
 - Invalid API inputs are distinguished from mathematically incompatible inputs.
 
-The first version will accept moduli from `1` through `2^31 - 1`, normalized
-nonnegative remainders, and use `i64` arithmetic. Its implementation guarantee will
-explicitly cover that bounded domain. Supporting mathematical lemmas can use
-unbounded integers in Rocq.
+The implementation accepts moduli from `1` through `2^31 - 1`, normalized
+nonnegative remainders, and uses `i64` arithmetic. `crt_solve(a,m,b,n)` returns
+`-2` for invalid input, `-1` for valid incompatible input, and otherwise the
+canonical solution. `crt_period(m,n)` returns `-2` for invalid moduli and otherwise
+their lcm. These are the only two exported functions. Internal helpers have
+explicit preconditions. The mathematical CRT theorem covers unbounded integers.
 
 ## Verification approach
 
-Inference will contain the executable algorithm and source specifications. The
-compiler will produce Wasm and Rocq proof obligations. Completed proofs must
-connect the generated executable functions to the mathematical result and pass
-independent Rocq checking.
+Inference contains the executable algorithm and 15 source specifications. The
+compiler produces Wasm and Rocq proof obligations. The mathematical proofs are
+assumption-free. Separate proofs establish actual finite executions in one
+instantiated runtime, realize the function interpretation, and discharge the
+exact generated helper and public `ValidSpec` obligations. These proofs use the
+verifier's explicitly audited upstream assumptions. An operational confluence
+proof establishes unique normal results for actual Wasm executions; it connects
+the witnesses to all five original execution targets.
 
 The demonstration must execute the artifact covered by the proof evidence.
-Compiler versions, proof dependencies, artifact hashes, theorem assumptions, and
-reproduction commands will be recorded before any verified release is claimed.
+Builds record compiler and artifact hashes in `build/crt/manifest.json`. The proof
+checks write target names, source hashes, and assumption audits to
+`build/proofs/report.json` and `build/wasm-proofs/report.json`. Run the latter
+inside the verifier container with `make wasm-proofs`; see the
+[reproduction commands](docs/implementation.md).
 
 See the [proposed design](docs/superpowers/specs/2026-10-23-generalized-crt-design.md)
 for the interfaces, proof structure, and acceptance criteria.
@@ -68,15 +113,17 @@ for the interfaces, proof structure, and acceptance criteria.
 ## Specifications and feasibility results
 
 - [Exact theorem statements, loop invariants, and arithmetic bounds](docs/specifications.md).
-- [Machine-readable Rocq proposition definitions](specifications/CRTStatements.v).
-- [Inference contracts and executable feasibility bodies](probes/crt_contracts.inf).
-- [Check results and reproduction commands](docs/specification-check.md).
+- [Rocq proposition definitions](specifications/CRTStatements.v) and [completed mathematical proofs](proofs/README.md).
+- [Inference implementation and contracts](src/crt.inf).
+- [Implementation checks and reproduction commands](docs/implementation.md).
+- [Historical feasibility check](docs/specification-check.md).
 
-All 15 source contracts translated, including nested existence/uniqueness
-quantifiers. The mathematical statements type-check, and the proof-mode Wasm
-passed 44,719 finite runtime checks. Loop invariants must be supplied in Rocq;
-source quantifiers are bounded by their machine types. These checks establish
-expressibility and exercise the prototype, not proof completion.
+All 15 source contracts translate, including nested existence/uniqueness
+quantifiers. Sixteen exact mathematical/loop targets and four recurrence
+termination/correctness results are proved, together with all five execution
+targets. The public Wasm functions pass 23,274 reference-vector checks; three deliberately faulty variants produce concrete
+counterexamples. Loop proofs live in Rocq, and source quantifiers remain bounded
+by their machine types.
 
 ## References
 
