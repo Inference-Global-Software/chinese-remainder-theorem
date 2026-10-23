@@ -21,6 +21,11 @@ git -C "$crt_verifier_repo" archive "$crt_verifier_commit" \
 cp "$crt_recipe_dir"/{Dockerfile,bootstrap.sh,lock.py,worker-opam.lock.json,provenance.json} \
   "$crt_build_context/"
 
-docker build --platform linux/amd64 \
+crt_build_options=()
+if [[ ${CRT_DOCKER_NO_CACHE:-0} == 1 ]]; then
+  crt_build_options+=(--no-cache)
+fi
+
+docker build "${crt_build_options[@]}" --platform linux/amd64 \
   --network "${CRT_DOCKER_BUILD_NETWORK:-default}" \
   --tag "${CRT_WASM_IMAGE:-crt-wasm-verifier:locked}" "$crt_build_context"

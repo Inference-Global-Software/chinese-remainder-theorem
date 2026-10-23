@@ -41,7 +41,7 @@
   },
   "mathematical_proofs": {
     "status": "mathematical_proofs_checked",
-    "coqc": "The Coq Proof Assistant, version 8.20.1\ncompiled with OCaml 5.4.0",
+    "coqc": "The Coq Proof Assistant, version 8.20.1\ncompiled with OCaml 4.13.1",
     "exact_targets": {
       "CRTMath": {
         "normalization_proved": "T_normalization",
@@ -68,7 +68,7 @@
     "assumption_free_declarations": 29,
     "independent_kernel_check": "passed",
     "sources": {
-      "CRTStatements.v": "beafca09d138a618c9e9fa80430cb98cf092b19c5fcbf0bd4a36e95e885f262d",
+      "CRTStatements.v": "e8cf8f07465ac07f2ac9d8c758d5a9db1378ba2c2455ba4f8f85f67ccdcdc853",
       "CRTMath.v": "3847875c0f6f491479e36936f6b6a7f1227e0dd0f49822a667bf8f8ffb76e343",
       "CRTLoops.v": "ad6abd594ce47fb6d1b899b95f626e9cfbe58aba0260eebb34641c7d324c1d71"
     },
@@ -509,7 +509,7 @@
     "generated_admission_negative_control": "rejected",
     "verifier_theory_source_tree_sha256": "4a541da50416b25263db45aa0183c1be273acb9ae9557ea947e5d341e572d81a",
     "proof_sources": {
-      "specifications/CRTStatements.v": "beafca09d138a618c9e9fa80430cb98cf092b19c5fcbf0bd4a36e95e885f262d",
+      "specifications/CRTStatements.v": "e8cf8f07465ac07f2ac9d8c758d5a9db1378ba2c2455ba4f8f85f67ccdcdc853",
       "proofs/CRTMath.v": "3847875c0f6f491479e36936f6b6a7f1227e0dd0f49822a667bf8f8ffb76e343",
       "proofs/CRTLoops.v": "ad6abd594ce47fb6d1b899b95f626e9cfbe58aba0260eebb34641c7d324c1d71",
       "proofs/wasm/CRTAPIModel.v": "b1657077ed33011589c22872bfc4254739af5c9f27d623772ef0752f1f00be9c",
@@ -549,21 +549,23 @@
   "compiled_verifier_objects": {
     "relative_root": "_build/default/theories",
     "count": 85,
-    "tree_sha256": "9c3aa227b3cd0937e2028dea278c8cf878301a0942f8ff982d4981c9ad440a22",
+    "tree_sha256": "72b2dc5767a1a42a293eebd3a7d3bc00a1259fa49a121c24caf9f2e0750d24c3",
     "hash_scheme": "sorted relative POSIX path, NUL, file bytes, NUL for each *.vo",
-    "scope": "Fingerprint of actual compiled verifier objects in the checked environment; recorded separately from source-tree identity."
+    "scope": "Actual compiled verifier objects in the freshly built pinned image."
   },
   "environment_reproduction": {
-    "recorded_run": "Native infs project artifacts checked in the existing pinned verifier devcontainer, with exact locked dependencies, clean pinned verifier source, and its completed upstream audits.",
-    "recipe_validation": "Shell/Python syntax and lock rendering/checksum verified; packaged Dockerfile not separately rebuilt from scratch."
+    "recorded_run": "Native infs project artifacts and both CRT proof gates checked in a new container created from the freshly built pinned verifier image.",
+    "recipe_validation": "Packaged Docker recipe rebuilt successfully with --no-cache from the pinned Coq base image; all 78 installed package versions match the lock, the full verifier builds, and both upstream audits pass.",
+    "evidence": "docs/evidence/clean-reproduction.json",
+    "image_id": "sha256:f650762e9d8dd177682f56b5062c0e0a13d097dc24587925ecc4163ca26ade09"
   },
   "review": {
     "kind": "fresh-context automated review",
-    "scope": "Native Inference project layout, infs build/provenance, unchanged source rename, mechanical generated-module proof renaming, tests, and public walkthrough.",
+    "scope": "Documentation status corrections, optional no-cache verifier build, fresh pinned image and upstream audits, both CRT proof gates, and final evidence consistency.",
     "critical_findings": 0,
     "important_findings": 0,
     "minor_findings": 0,
-    "verification_followup": "Corrected the stale proof comment, then reran the complete generated-Wasm compilation, exact target checks, assumption audit, admission negative control, and independent coqchk on the final source snapshot.",
+    "verification_followup": "Independent read-only review verified the exact reports, all 35 proof-source hashes, six recipe hashes, nine local-evidence hashes, 78 locked package versions, unchanged theorem definitions, documentation links, and final check results; no actionable findings.",
     "previously_deferred_minor": "Automatically record compiled verifier object fingerprints in future checker reports; this snapshot includes a freshly measured fingerprint."
   }
 }

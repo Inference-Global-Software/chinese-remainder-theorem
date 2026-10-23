@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-23",
+  "status": "fresh_image_build_and_all_current_checks_passed",
+  "base_image": "coqorg/coq:8.20@sha256:e50d77c4c5a9aa0d76ae1b343d79c5f922da3a75054b79c5dc635895438e4674",
+  "verifier_commit": "8f485f037a270271bf2e1393c24fc0684097163b",
+  "wasmcert_commit": "0fd83fa708922721132b6d6737179568d1f1d553",
+  "image": {
+    "tag": "crt-wasm-verifier:crt-pr2-clean",
+    "id": "sha256:f650762e9d8dd177682f56b5062c0e0a13d097dc24587925ecc4163ca26ade09",
+    "created_utc": "2026-10-23T05:44:07.014127742Z",
+    "os": "linux",
+    "architecture": "amd64"
+  },
+  "build": {
+    "command": "CRT_DOCKER_NO_CACHE=1 CRT_DOCKER_BUILD_NETWORK=host CRT_WASM_IMAGE=crt-wasm-verifier:crt-pr2-clean bash scripts/wasm_environment/build.sh /path/to/wasm-verifier",
+    "docker_layer_cache": "disabled with --no-cache",
+    "context": "git archive of the pinned verifier commit; no existing verifier build outputs or containers copied",
+    "starting_point": "Pinned Coq base image; its preinstalled Coq/OCaml toolchain was reused",
+    "recipe_files": {
+      "scripts/wasm_environment/Dockerfile": "22df0f949266374b414e33f029dbafbdd65124c478f7443f357a2c6fec1499c9",
+      "scripts/wasm_environment/bootstrap.sh": "01bd2ddae1ff543da16acdc519a00540b2db5edf9c39b554fd906e4af4178e45",
+      "scripts/wasm_environment/build.sh": "5462e44239e716d7be296fee838947ab4dd4a0e154d7dc636c7a14edd3572365",
+      "scripts/wasm_environment/lock.py": "93d42f28910074d13e768f6bad264c7bea88d2712a02351875ebcb593c614b98",
+      "scripts/wasm_environment/provenance.json": "ecea9409d4a2e65b3c8e0d99b8fab89dad45605a031faa8913d0c982cf33fc97",
+      "scripts/wasm_environment/worker-opam.lock.json": "54a7906c1a35c7a605bd0b7cadce4c0689aa0a7a41c71121c939bf59e5eb0a1a"
+    }
+  },
+  "installed_package_count": 78,
+  "installed_packages_match_lock": true,
+  "upstream_proof_completeness": {
+    "status": "passed",
+    "sources": 85,
+    "proof_holes": 0
+  },
+  "upstream_assumption_audit": {
+    "status": "passed",
+    "declarations": 135,
+    "allowlisted_transitive_dependencies": 10
+  },
+  "compiled_verifier_objects": {
+    "relative_root": "_build/default/theories",
+    "count": 85,
+    "tree_sha256": "72b2dc5767a1a42a293eebd3a7d3bc00a1259fa49a121c24caf9f2e0750d24c3",
+    "hash_scheme": "sorted relative POSIX path, NUL, file bytes, NUL for each *.vo",
+    "scope": "Actual compiled verifier objects in the freshly built pinned image."
+  },
+  "verifier_theory_source_tree_sha256": "4a541da50416b25263db45aa0183c1be273acb9ae9557ea947e5d341e572d81a",
+  "crt_checks": {
+    "runtime_test_methods": 14,
+    "public_api_vectors": 23274,
+    "mathematical_targets": 16,
+    "assumption_free_math_declarations": 29,
+    "wasm_audited_declarations": 320,
+    "execution_targets": 5,
+    "generated_module_and_both_exact_contracts": "passed",
+    "admission_negative_control": "rejected",
+    "independent_math_kernel_check": "passed",
+    "independent_wasm_kernel_check": "passed",
+    "proof_commands": [
+      "opam exec -- python3 scripts/check_proofs.py --out build/reproduction/proofs",
+      "opam exec -- python3 scripts/check_wasm_proofs.py --out build/reproduction/wasm-proofs"
+    ],
+    "execution_environment": "New container started from the recorded image with the current CRT checkout mounted at /workspaces/crt",
+    "proof_output_directories": "New directories, separate from previous proof runs"
+  },
+  "local_evidence_sha256": {
+    "build/reproduction/verifier-image-build.log": "e0b37cebffd93a517f9c67f8f38bc80a58a68f0bdf0a7c4e98f9c3ab0dd09d91",
+    "build/reproduction/runtime-tests.log": "e3a1babd58321da6e904b42dd19135290c4d85ba6bc76992c8a5c8e124a5d7c7",
+    "build/reproduction/proofs/report.json": "91fff51dee99e8d5bf226d2c80cfeed509c8b910a91f876250a81d9e2d41a360",
+    "build/reproduction/wasm-proofs/report.json": "412484950f7ee9a6333c37db633456bfc1f26cda3a3e68eae442af39c4e342e9",
+    "build/reproduction/proofs/Audit.log": "e370aa5c6585a943810c69f0d3a58fdca309dfd0cca5fad2d42fc3e197544ca5",
+    "build/reproduction/proofs/coqchk.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/reproduction/wasm-proofs/Audit.log": "8e4fbd677e42f57d14ba15cdb4f6636c95a280c5cb7a128f00840d4cdc91e51e",
+    "build/reproduction/wasm-proofs/RejectedCertificate.log": "34d1c75a7f259bf2383ee10a29f78163ab6f8f9999e5e882c58c851623a7461e",
+    "build/reproduction/wasm-proofs/coqchk.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "scope": "Fresh environment construction and proof rechecking; no claim of bit-for-bit reproducible proof objects or a fresh Inference compiler build."
+}

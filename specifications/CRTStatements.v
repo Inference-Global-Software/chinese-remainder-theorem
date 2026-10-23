@@ -144,7 +144,7 @@ Definition T_crt_bounds : Prop :=
       0 <= a + m * t < period m n /\ word (a + m * t).
 
 (* API refinement targets are predicates ON execution relations.
-   Their arguments are not supplied as axioms. A future proof must instantiate
+   Their arguments are not supplied as axioms. CRTExecutionTargets.v instantiates
    these relations with actual generated Wasm execution in a valid runtime. *)
 Definition solve_post (a m b n result : Z) : Prop :=
   (~ domain a m b n /\ result = -2) \/

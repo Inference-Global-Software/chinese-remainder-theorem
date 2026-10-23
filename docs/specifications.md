@@ -1,6 +1,6 @@
 # Exact CRT contracts and loop invariants
 
-Status, 2026-10-23: **mathematical, loop, and exact generated-contract proofs completed**.
+Status, 2026-10-23: **mathematical, loop, exact generated-contract, and all five execution-target proofs completed**.
 The authoritative machine-readable targets are in
 [`CRTStatements.v`](../specifications/CRTStatements.v). Each `T_*` is a definition
 of a proposition to prove, not an asserted theorem. The file has no admitted
@@ -8,8 +8,10 @@ proofs or axioms. Its successful elaboration establishes that the statements are
 well-typed, not that they hold. The separate
 [completed proofs](../proofs/README.md) now establish all 16 mathematical and
 loop targets. Actual Wasm execution witnesses and both exact generated `ValidSpec`
-obligations are also proved. The five stronger execution-relation adapters below
-remain uninstantiated; [proof coverage](../proofs/README.md) explains the distinction.
+obligations are also proved. All five execution-relation targets below are
+instantiated with actual WasmCert invocation and signed result decoding.
+An operational confluence proof establishes uniqueness of normal results;
+[proof coverage](../proofs/README.md) states the exact guarantee and trust boundary.
 
 [`crt_contracts.inf`](../probes/crt_contracts.inf) contains executable feasibility
 bodies and 15 source contracts. Keeping bodies in the probe makes applications
@@ -89,6 +91,10 @@ nondeterministic choices. `total_correct` requires an execution to exist and
 every normally returned result to fit `i64` and satisfy its postcondition.
 The `T_*_execution` definitions take an execution relation as a parameter; they
 do not supply that relation or assume its correctness.
+[`CRTExecutionTargets.v`](../proofs/wasm/CRTExecutionTargets.v) supplies concrete
+relations and proves each original target. The guarantee requires a terminating
+normal execution to exist and every normal return to satisfy its postcondition;
+it does not assert that every possible reduction sequence terminates.
 
 | Function | Preconditions | Exact postcondition |
 | --- | --- | --- |
@@ -240,7 +246,7 @@ direct calls, establish the appropriate runtime-indexed realization using the
 verifier's `ValidSpec_at` route and actual instances of the callees. Proving the
 pure `Z` targets alone cannot discharge the executable guarantee.
 
-## Evidence and remaining execution targets
+## Evidence and completed execution targets
 
 See the [reproducible check report](specification-check.md) and its
 [machine-readable evidence](evidence/2026-10-23-specifications.json).
@@ -251,6 +257,8 @@ The [implementation evidence](evidence/implementation.json) records the complete
 connection to generated Wasm instructions and calls, independent `ValidModule`,
 both exact `ValidSpec` certificates, pinned dependencies, and assumption audit.
 These proofs use the real verifier; the earlier signature-only check remains
-historical evidence of expressibility. The five universal `T_*_execution`
-adapters still require an operational result-uniqueness argument, as explained
-in [proof coverage](../proofs/README.md).
+historical evidence of expressibility. All five universal `T_*_execution`
+targets are discharged by combining finite execution witnesses with the proved
+operational result-uniqueness argument. The proof gate checks the exact original
+target types with no retained uniqueness premises, as explained in
+[proof coverage](../proofs/README.md).
