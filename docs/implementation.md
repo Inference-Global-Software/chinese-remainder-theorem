@@ -108,6 +108,16 @@ including a separate fingerprint of its compiled verifier objects. The checker
 currently records verifier source hashes automatically; automatically recording
 compiled-object hashes for future or custom environments remains a reproduction
 improvement. A source hash alone does not identify stale compiled dependencies.
+
+The [clean reproduction record](evidence/clean-reproduction.json) identifies the
+fresh image built with `CRT_DOCKER_NO_CACHE=1`, its recipe hashes, all 78 locked
+package versions checked, and the upstream audit results: 85 sources without
+proof holes and 135 declarations using only the 10 allowlisted dependencies.
+Both CRT proof gates were then run in a new container with separate, new output
+directories under `build/reproduction/`. The record includes the exact commands
+and local log hashes. This validates the packaged recipe starting from its
+pinned Coq base image; the Inference compiler was the existing pinned binary.
+
 All five original `T_*_execution` targets are now instantiated with actual
 WasmCert invocation and signed i64 decoding. A proved operational confluence
 argument ensures uniqueness of normal results; the endpoints combine it with

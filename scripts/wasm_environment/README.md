@@ -33,6 +33,20 @@ Coq, and dune commands run inside Docker. The host needs Docker, Python 3, git,
 and tar. The base image is `linux/amd64`; the initial dependency compilation is
 substantial. `CRT_WASM_IMAGE` overrides the output image name.
 
+For a fresh dependency and verifier build, disable Docker layer caching:
+
+```sh
+CRT_DOCKER_NO_CACHE=1 bash scripts/wasm_environment/build.sh /path/to/wasm-verifier
+```
+
+This starts from the pinned Coq base image and reruns every recipe step,
+including dependency installation, verifier compilation, and upstream audits.
+It does not import the existing verifier container or its compiled outputs.
+The [recorded clean run](../../docs/evidence/clean-reproduction.json) identifies
+the resulting image, recipe hashes, dependency checks, and subsequent CRT proof
+checks. The pinned base image supplies Coq and OCaml; this command does not
+rebuild that base image.
+
 If the current login session does not yet have the Docker group, run:
 
 ```sh

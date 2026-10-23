@@ -487,8 +487,12 @@ depending on a generated admitted placeholder.
 
 The committed [evidence snapshot](evidence/implementation.json) records the
 completed checks for this implementation, including the compiled verifier
-object fingerprint. Its reproduction notes distinguish that checked environment
-from the packaged Docker recipe, which was not separately rebuilt from scratch.
+object fingerprint. The [clean reproduction record](evidence/clean-reproduction.json)
+identifies a fresh image built from the packaged Docker recipe with layer caching
+disabled, followed by both CRT proof gates in a new container. The build starts
+from the pinned Coq base image and verifies all 78 installed package versions
+against the lock. It rebuilds the verifier and its dependencies beyond that
+base; it does not rebuild the base image's Coq toolchain or the Inference compiler.
 
 ## What the assurance depends on
 
