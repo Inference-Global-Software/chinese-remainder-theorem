@@ -3,6 +3,9 @@
 A constructive implementation of the generalized Chinese Remainder Theorem
 (CRT), written in Inference and compiled to WebAssembly.
 
+**[Read the walkthrough](docs/walkthrough.md):** run the scheduling example,
+follow the Inference code, and see exactly which properties are proved.
+
 **Status: implemented, tested, and proved against the generated Wasm contracts.**
 The generalized CRT, construction, arithmetic bounds, and Euclid loop invariants
 are proved in Rocq. Execution proofs connect all five emitted function bodies to
