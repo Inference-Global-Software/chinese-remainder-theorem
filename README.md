@@ -3,8 +3,9 @@
 A planned constructive implementation and formal verification of the generalized
 Chinese Remainder Theorem (CRT), written in Inference and compiled to WebAssembly.
 
-**Status: design stage.** This repository currently contains the project scope and
-design. The solver, executable artifacts, and completed proofs are not present yet.
+**Status: design stage.** This repository currently contains the project scope,
+design, and an annotated research collection. The solver, executable artifacts,
+and completed proofs are not present yet.
 No verification result is claimed.
 
 ## The problem
@@ -65,8 +66,13 @@ for the interfaces, proof structure, and acceptance criteria.
 
 ## References
 
-- [Chinese Remainder Theorem — UMBC](https://userpages.cs.umbc.edu/chang/cs203.f10/crt.shtml)
-- [Generalized CRT compatibility — University of Colorado](https://math.colorado.edu/~kearnes/Teaching/Courses/S26/crt.pdf)
+Start with the [implementation reading guide](references/README.md). It includes
+two research PDFs, four paper citations, a computational number-theory textbook,
+arithmetic-bounds analysis, and the relevant proof-library and compiler contracts.
+Each reference is mapped to the implementation or proof obligation it supports.
+
+The collection also contains [BibTeX citations](references/references.bib) and
+[PDF provenance, licenses, and checksums](references/manifest.json).
 
 RSA round-trip correctness is a possible later application of the verified
 arithmetic. It is outside the initial project scope.

@@ -6,6 +6,8 @@ Status: proposed design for review; implementation and proofs have not started.
 
 Repository: `Inference-Global-Software/chinese-remainder-theorem`.
 
+Implementation references: [annotated research and reading guide](../../../references/README.md).
+
 ## Purpose
 
 Demonstrate Inference to both mathematicians and software developers through a

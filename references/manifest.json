@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "retrieved_on": "2026-10-23",
+  "path_base": "references/",
+  "documents": [
+    {
+      "id": "okazaki2012extended",
+      "title": "Extended Euclidean Algorithm and CRT Algorithm",
+      "authors": ["Hiroyuki Okazaki", "Yosiki Aoki", "Yasunari Shidama"],
+      "year": 2012,
+      "doi": "10.2478/v10037-012-0020-2",
+      "path": "papers/okazaki-aoki-shidama-2012-extended-euclidean-crt.pdf",
+      "source_url": "https://reference-global.com/download/article/10.2478/v10037-012-0020-2.pdf",
+      "license": "CC-BY-SA-3.0-or-later",
+      "license_url": "https://creativecommons.org/licenses/by-sa/3.0/",
+      "license_evidence": "PDF page 1 (printed page 175): CC-BY-SA License ver. 3.0 or later; copyright 2012 University of Bialystok",
+      "modified": false,
+      "bytes": 230922,
+      "sha256": "ccd77213992363370f41002bd2f19d0d5ba607663bba55b3a84ab64e1df3638e"
+    },
+    {
+      "id": "watt2019wasmlogic",
+      "title": "A Program Logic for First-Order Encapsulated WebAssembly",
+      "authors": ["Conrad Watt", "Petar Maksimović", "Neelakantan R. Krishnaswami", "Philippa Gardner"],
+      "year": 2019,
+      "doi": "10.4230/LIPIcs.ECOOP.2019.9",
+      "path": "papers/watt-et-al-2019-wasm-logic.pdf",
+      "source_url": "https://drops.dagstuhl.de/storage/00lipics/lipics-vol134-ecoop2019/LIPIcs.ECOOP.2019.9/LIPIcs.ECOOP.2019.9.pdf",
+      "license": "CC-BY-3.0",
+      "license_url": "https://creativecommons.org/licenses/by/3.0/",
+      "license_evidence": "Publisher record: https://drops.dagstuhl.de/entities/document/10.4230/LIPIcs.ECOOP.2019.9",
+      "modified": false,
+      "bytes": 783269,
+      "sha256": "6333e4b9f289a5204d0f638aed891da2373761daf3d33c91f683b6a7bcb6414f"
+    }
+  ]
+}
