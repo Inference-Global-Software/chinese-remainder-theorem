@@ -78,6 +78,40 @@ with a real compiled negative control. The raw generated `crt.v` contains three
 depend on those skeletons**. Report hashes identify the checked source snapshot
 and the runtime-tested Wasm artifact.
 
+## All five original execution targets
+
+[`wasm/CRTExecutionTargets.v`](wasm/CRTExecutionTargets.v) instantiates the
+unchanged propositions with actual WasmCert invocation in `crt_store`:
+
+| Proved endpoint | Original target |
+| --- | --- |
+| `gcd_execution_proved` | `T_gcd_execution` |
+| `normalize_execution_proved` | `T_normalize_execution` |
+| `inverse_execution_proved` | `T_inverse_execution` |
+| `period_execution_proved` | `T_period_execution` |
+| `solve_execution_proved` | `T_solve_execution` |
+
+The relation `crt_run` contains only a call, an actual `reduce_trans` execution,
+and signed decoding of its returned i64. It quantifies over arbitrary initial
+host state and arbitrary final host state, store, and frame. It contains no
+expected answer or mathematical postcondition. The helper domains retain their
+original preconditions; the two public targets cover every i64 input, including
+invalid inputs.
+
+[`CRTExecutionDeterminism.v`](wasm/CRTExecutionDeterminism.v) proves uniqueness
+of normal results for actual reductions from a resource-free native store.
+Primitive instruction proofs establish a local diamond, accounting for the
+multiple ways a trap context can collapse. A structural induction lifts that
+property through arbitrary nested labels and frames; confluence then equates
+normal results. Native calls, branch and return escapes, resource exclusion,
+and store preservation are proved within this argument.
+
+The five endpoints combine this uniqueness theorem with the existing finite
+execution witnesses and API postconditions. The proof gate closes a theorem
+at each exact original target type, rejecting retained uniqueness premises,
+and audits their full transitive assumptions. The adapted primitive-reduction
+constructors retain the upstream [WasmCert license](wasm/LICENSE.wasmcert).
+
 ## Precise scope and trust boundary
 
 The mathematical CRT theorem covers unbounded integers; the executable uses the
@@ -86,13 +120,11 @@ machine-type domains. `ValidSpec` is the real WasmVerifier proposition: the
 assertion payloads hold under an interpretation realized by actual finite Wasm
 executions. It is not a substitute for every possible total-correctness notion.
 
-The five original `T_*_execution` targets in `CRTStatements.v` additionally
-quantify over **every normally returned result** of a supplied execution
-relation. They remain uninstantiated. Connecting the concrete execution
-witnesses to those targets needs an operational result-uniqueness argument;
-this project does not claim that argument from witness existence alone.
-The 16 exact mathematical/loop targets are all discharged without changing
-their statements.
+The five original `T_*_execution` targets now hold for the concrete invocation
+relations. Their `total_correct` definition requires a terminating execution
+and correctness of **every normally returned result**. It does not assert that
+every possible reduction sequence terminates. All 16 mathematical/loop targets
+and five execution targets are discharged without changing their statements.
 
 The generated-Wasm proofs use nine audited upstream assumptions: classical
 logic, functional extensionality, two classical-real decision principles,

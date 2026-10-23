@@ -82,8 +82,9 @@ docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
 
 The checker verifies artifact hashes, copies and recompiles the mathematical,
 generated, and companion sources in dependency order, checks the exact
-`ValidModule` and both `ValidSpec` types, audits every companion lemma/theorem's
-transitive assumptions, and runs independent `coqchk`. A negative control
+`ValidModule`, both `ValidSpec` types, and all five original execution target
+types, audits every companion lemma/theorem's transitive assumptions, and runs
+independent `coqchk`. A negative control
 deliberately compiles a theorem using the generated admitted skeleton and
 requires the assumption audit to reject it. No generated placeholder is used
 by the completed certificate.
@@ -95,10 +96,13 @@ including a separate fingerprint of its compiled verifier objects. The checker
 currently records verifier source hashes automatically; automatically recording
 compiled-object hashes for future or custom environments remains a reproduction
 improvement. A source hash alone does not identify stale compiled dependencies.
-The five original `T_*_execution` adapters remain separate: their universal
-quantification over returned executions requires an additional operational
-result-uniqueness argument. The checked `ValidSpec` certificates and concrete
-finite execution proofs do not claim to discharge those adapters.
+All five original `T_*_execution` targets are now instantiated with actual
+WasmCert invocation and signed i64 decoding. A proved operational confluence
+argument ensures uniqueness of normal results; the endpoints combine it with
+the existing finite execution witnesses. The checker closes each exact target
+without any retained uniqueness premise and audits all supporting modules.
+The execution targets assert existence of a terminating execution and
+correctness of every normal return, as defined in the original specification.
 
 ## Historical probes
 

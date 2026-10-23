@@ -7,8 +7,10 @@ A constructive implementation of the generalized Chinese Remainder Theorem
 The generalized CRT, construction, arithmetic bounds, and Euclid loop invariants
 are proved in Rocq. Execution proofs connect all five emitted function bodies to
 the mathematical model and discharge the compiler's exact module and 15 source
-contracts using the real WasmVerifier library. See [proof coverage and trust
-boundary](proofs/README.md), including the separate execution targets still open.
+contracts using the real WasmVerifier library. All five original execution
+targets are also proved: calls have terminating executions, and every normally
+returned result satisfies its contract. See [proof coverage and trust
+boundary](proofs/README.md).
 
 ## Run it
 
@@ -77,7 +79,7 @@ and gives a public demonstration a concrete question to answer.
 - Every compatible input produces a solution.
 - The returned solution is the unique one in the canonical interval.
 - A mathematical failure result means that no solution exists.
-- Execution terminates and arithmetic stays within its machine representation.
+- Calls have terminating executions and arithmetic stays within its machine representation.
 - Invalid API inputs are distinguished from mathematically incompatible inputs.
 
 The implementation accepts moduli from `1` through `2^31 - 1`, normalized
@@ -94,7 +96,9 @@ compiler produces Wasm and Rocq proof obligations. The mathematical proofs are
 assumption-free. Separate proofs establish actual finite executions in one
 instantiated runtime, realize the function interpretation, and discharge the
 exact generated helper and public `ValidSpec` obligations. These proofs use the
-verifier's explicitly audited upstream assumptions.
+verifier's explicitly audited upstream assumptions. An operational confluence
+proof establishes unique normal results for actual Wasm executions; it connects
+the witnesses to all five original execution targets.
 
 The demonstration must execute the artifact covered by the proof evidence.
 Builds record compiler and artifact hashes in `build/crt/manifest.json`. The proof
@@ -116,8 +120,8 @@ for the interfaces, proof structure, and acceptance criteria.
 
 All 15 source contracts translate, including nested existence/uniqueness
 quantifiers. Sixteen exact mathematical/loop targets and four recurrence
-termination/correctness results are proved. The public Wasm functions pass 23,274
-reference-vector checks; three deliberately faulty variants produce concrete
+termination/correctness results are proved, together with all five execution
+targets. The public Wasm functions pass 23,274 reference-vector checks; three deliberately faulty variants produce concrete
 counterexamples. Loop proofs live in Rocq, and source quantifiers remain bounded
 by their machine types.
 

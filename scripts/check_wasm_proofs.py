@@ -20,7 +20,31 @@ ROOT = Path(__file__).resolve().parents[1]
 MODULES = ['CRTAPIModel', 'CRTStorePure', 'CRTModule', 'CRTLoopRules', 'CRTExecution',
            'CRTCheckedArithmetic', 'CRTGeneralArithmetic', 'CRTCalls', 'CRTContracts',
            'CRTInverseExecution', 'CRTPublicExecution', 'CRTSolveExecution',
-           'CRTSpecPayloads', 'CRTRealization']
+           'CRTSpecPayloads', 'CRTRealization',
+           'CRTExecutionFrames', 'CRTResourceReads', 'CRTExecutionContexts',
+           'CRTContextFactor', 'CRTExecutionEscapes', 'CRTFlatContext',
+           'CRTCallInversion', 'CRTSimpleDeterminism', 'CRTConfluence',
+           'CRTDirectDeterminism', 'CRTDirectDeepOverlap', 'CRTSurfaceReduction',
+           'CRTDirectTrap', 'CRTDirectShape', 'CRTDirectFlatJoin',
+           'CRTExecutionComposition', 'CRTExecutionDeterminism', 'CRTExecutionTargets']
+EXECUTION_TARGETS = {
+    'solve_execution_proved': ('T_solve_execution', 'crt_solve_exec'),
+    'period_execution_proved': ('T_period_execution', 'crt_period_exec'),
+    'gcd_execution_proved': ('T_gcd_execution', 'crt_gcd_exec'),
+    'normalize_execution_proved': ('T_normalize_execution', 'crt_normalize_exec'),
+    'inverse_execution_proved': ('T_inverse_execution', 'crt_inverse_exec'),
+}
+
+
+def execution_target_checks():
+    # Closing a theorem, rather than merely printing a type with Check, also
+    # rejects unresolved implicit proof arguments or retained section premises.
+    return '\n'.join(
+        f'Theorem exact_{endpoint} : forall hs : host_state,\n'
+        f'  CRT.CRTStatements.{target} (CRTWasm.CRTExecutionTargets.{relation} hs).\n'
+        f'Proof. intro hs. exact (CRTWasm.CRTExecutionTargets.{endpoint} hs). Qed.\n'
+        for endpoint, (target, relation) in EXECUTION_TARGETS.items()
+    )
 
 
 def sha256(path):
@@ -108,15 +132,16 @@ def main():
     if 'CRTModule' in modules:
         audit += ('Check (CRTWasm.CRTModule.checked_valid_module :\n'
                   '  Verifier.ValidModule CRTGenerated.crt.crt).\n')
-    audit += '''From Wasm Require Import host.
+    audit += '''From mathcomp Require Import ssreflect eqtype.
+From Wasm Require Import host.
 Section ExactTargets.
 Context `{ho : host}.
 Check (CRTWasm.CRTRealization.checked_helper_contracts :
   Verifier.ValidSpec CRTGenerated.crt.crt CRTGenerated.crt.crt__HelperContracts_specs).
 Check (CRTWasm.CRTRealization.checked_public_contracts :
   Verifier.ValidSpec CRTGenerated.crt.crt CRTGenerated.crt.crt__PublicContracts_specs).
-End ExactTargets.
 '''
+    audit += execution_target_checks() + '\nEnd ExactTargets.\n'
     audit += '\n'.join(f'Print Assumptions {decl}.' for decl in declarations) + '\n'
     (out / 'Audit.v').write_text(audit)
     output = run(['coqc', *flags, 'Audit.v'], 'Audit.log')
@@ -151,12 +176,12 @@ Print Assumptions false_certificate.
     for source in sorted((verifier / 'theories').rglob('*.v')):
         tree.update(str(source.relative_to(verifier)).encode() + b'\0' + source.read_bytes() + b'\0')
     report = {
-        'status': 'generated_module_and_contracts_checked',
+        'status': 'generated_module_contracts_and_execution_targets_checked',
         'compiled_wasm_certified': True,
         'certificate_semantics': 'WasmVerifier ValidModule and both exact generated ValidSpec propositions',
-        'separate_uninstantiated_targets': ['T_normalize_execution', 'T_gcd_execution',
-                                           'T_inverse_execution', 'T_period_execution',
-                                           'T_solve_execution'],
+        'separate_uninstantiated_targets': [],
+        'exact_execution_targets': {endpoint: target for endpoint, (target, _) in EXECUTION_TARGETS.items()},
+        'execution_semantics': 'Actual WasmCert invocation reduction in the shared CRT runtime; arbitrary final host/store/frame; signed i64 result decoding',
         'coqc': subprocess.check_output(['coqc', '--version'], text=True).strip(),
         'modules': modules, 'audited_declarations': declarations,
         'transitive_assumptions': actual, 'assumptions_allowlist_sha256': sha256(allowfile),
@@ -166,7 +191,7 @@ Print Assumptions false_certificate.
         'proof_sources': source_hashes,
     }
     report_path.write_text(json.dumps(report, indent=2) + '\n')
-    print(f'Checked {len(declarations)} declarations and the exact generated contracts.\n{report_path}')
+    print(f'Checked {len(declarations)} declarations, the exact generated contracts, and all five original execution targets.\n{report_path}')
 
 
 if __name__ == '__main__':
