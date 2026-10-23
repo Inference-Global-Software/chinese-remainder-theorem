@@ -7,3 +7,5 @@
 __pycache__/
 /.worktrees/
 /.superpowers/
+.lia.cache
+.nia.cache
