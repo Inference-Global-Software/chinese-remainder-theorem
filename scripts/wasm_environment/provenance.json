@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "baseImage": "coqorg/coq:8.20@sha256:e50d77c4c5a9aa0d76ae1b343d79c5f922da3a75054b79c5dc635895438e4674",
+  "coqVersion": "8.20.1",
+  "wasmVerifierCommit": "8f485f037a270271bf2e1393c24fc0684097163b",
+  "coqWasmCommit": "0fd83fa708922721132b6d6737179568d1f1d553",
+  "dependencyLock": {
+    "repository": "inference-ai-prover",
+    "commit": "8248124b80e01a1ea89b633ff54d74ea96b3effb",
+    "path": "contracts/worker-opam.lock.json",
+    "sha256": "54a7906c1a35c7a605bd0b7cadce4c0689aa0a7a41c71121c939bf59e5eb0a1a"
+  }
+}

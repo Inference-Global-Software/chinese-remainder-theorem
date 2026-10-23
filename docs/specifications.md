@@ -1,16 +1,21 @@
 # Exact CRT contracts and loop invariants
 
-Status, 2026-10-23: **statements and expressibility checks, no completed proofs**.
+Status, 2026-10-23: **mathematical, loop, and exact generated-contract proofs completed**.
 The authoritative machine-readable targets are in
 [`CRTStatements.v`](../specifications/CRTStatements.v). Each `T_*` is a definition
 of a proposition to prove, not an asserted theorem. The file has no admitted
 proofs or axioms. Its successful elaboration establishes that the statements are
-well-typed, not that they hold.
+well-typed, not that they hold. The separate
+[completed proofs](../proofs/README.md) now establish all 16 mathematical and
+loop targets. Actual Wasm execution witnesses and both exact generated `ValidSpec`
+obligations are also proved. The five stronger execution-relation adapters below
+remain uninstantiated; [proof coverage](../proofs/README.md) explains the distinction.
 
 [`crt_contracts.inf`](../probes/crt_contracts.inf) contains executable feasibility
 bodies and 15 source contracts. Keeping bodies in the probe makes applications
 refer to actual compiled functions. These bodies are an unverified prototype,
 not the project's verified implementation.
+The implemented and tested entry point is [`src/crt.inf`](../src/crt.inf).
 
 ## Definitions and quantifier domains
 
@@ -165,8 +170,9 @@ r1*abs(t0-q*t1) <= r1*abs(t0) + r0*abs(t1) = A
 Thus both the multiplication and subtraction fit, even on the final iteration.
 The analogous argument bounds `q*s1` and `s2` by `B`.
 `T_eea_step_bounds` states `1<=q<=A`, `0<=q*r1<=A`, these four coefficient
-bounds, and their representability as `i64`. These derivations are proof plans;
-the corresponding Rocq propositions remain unproved.
+bounds, and their representability as `i64`. The corresponding Rocq propositions
+are now proved in
+[`CRTLoops.v`](../proofs/CRTLoops.v).
 
 ## CRT arithmetic bounds
 
@@ -234,16 +240,17 @@ direct calls, establish the appropriate runtime-indexed realization using the
 verifier's `ValidSpec_at` route and actual instances of the callees. Proving the
 pure `Z` targets alone cannot discharge the executable guarantee.
 
-## Evidence and next proof work
+## Evidence and remaining execution targets
 
 See the [reproducible check report](specification-check.md) and its
 [machine-readable evidence](evidence/2026-10-23-specifications.json).
 The compiler's [versioned Rocq contract](https://github.com/Inferara/inference/blob/95db5e4170fdfd5080afdcb938c7704a790a7b24/core/wasm-to-v/ROCQ_CONTRACT.md)
 governs the translation and realization claims above.
 
-The next proof work is to discharge the mathematical/loop targets, connect them
-to the generated checked Wasm instructions and calls, and close the generated
-`ValidModule` and both `ValidSpec` obligations against the real verifier.
-Its dependency revisions and transitive assumptions must be audited before a
-verified release. The public signature stub used in this feasibility check
-does not provide those semantics or proofs.
+The [implementation evidence](evidence/implementation.json) records the completed
+connection to generated Wasm instructions and calls, independent `ValidModule`,
+both exact `ValidSpec` certificates, pinned dependencies, and assumption audit.
+These proofs use the real verifier; the earlier signature-only check remains
+historical evidence of expressibility. The five universal `T_*_execution`
+adapters still require an operational result-uniqueness argument, as explained
+in [proof coverage](../proofs/README.md).

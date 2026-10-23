@@ -50,14 +50,14 @@ WasmVerifier with its pinned container dependencies.
 probe. Build writes `build/crt/crt.wasm`, `crt.v`, and a hash manifest. Demo takes
 four decimal arguments in order `a m b n` and uses BigInt throughout.
 
-- [ ] Add tests for the real build and CLI; verify failure before implementation.
-- [ ] Move the tested recurrence into `src/crt.inf` with documented contracts.
-- [ ] Implement build and CLI; reuse independent runtime-vector generators.
-- [ ] Exercise exhaustive small inputs, deterministic large inputs, full-width
+- [x] Add tests for the real build and CLI; verify failure before implementation.
+- [x] Move the tested recurrence into `src/crt.inf` with documented contracts.
+- [x] Implement build and CLI; reuse independent runtime-vector generators.
+- [x] Exercise exhaustive small inputs, deterministic large inputs, full-width
   invalid values, and literal success/impossibility/error demo cases.
-- [ ] Compile three deliberate faulty variants and require concrete failing cases
+- [x] Compile three deliberate faulty variants and require concrete failing cases
   for missing compatibility, missing signed normalization, and noncanonical output.
-- [ ] Run the complete runtime suite and commit the implementation/tests.
+- [x] Run the complete runtime suite and commit the implementation/tests.
 
 ### Task 2: Abstract generalized CRT proofs
 
@@ -68,11 +68,11 @@ four decimal arguments in order `a m b n` and uses BigInt throughout.
 `incompatible_proved`, `construct_proved`, `crt_bounds_proved` discharge their
 corresponding `T_*` targets, without relying on any executable/probe assumptions.
 
-- [ ] Attempt the target proof build before the file exists and record the failure.
-- [ ] Prove divisibility/reduction helpers, existence, uniqueness, periodicity,
+- [x] Attempt the target proof build before the file exists and record the failure.
+- [x] Prove divisibility/reduction helpers, existence, uniqueness, periodicity,
   construction, and machine arithmetic bounds.
-- [ ] Compile using `coqc -Q specifications CRT -Q proofs CRT proofs/CRTMath.v`.
-- [ ] Audit `Print Assumptions` for every exported theorem; require closure.
+- [x] Compile using `coqc -Q specifications CRT -Q proofs CRT proofs/CRTMath.v`.
+- [x] Audit `Print Assumptions` for every exported theorem; require closure.
 
 ### Task 3: Loop invariants, bounds, and termination proofs
 
@@ -83,11 +83,11 @@ of `CRTMath.v`.
 `T_eea_init/step/step_bounds/exit`. Add a terminating mathematical recurrence
 whose result follows from the invariants, with no claim of Wasm refinement.
 
-- [ ] Attempt the target proof build before the file exists and record the failure.
-- [ ] Prove invariant initialization, preservation, final result and decreasing
+- [x] Attempt the target proof build before the file exists and record the failure.
+- [x] Prove invariant initialization, preservation, final result and decreasing
   natural-number variant, including final-iteration coefficient bounds.
-- [ ] Compile using `coqc -Q specifications CRT -Q proofs CRT proofs/CRTLoops.v`.
-- [ ] Audit `Print Assumptions` for every exported theorem; require closure.
+- [x] Compile using `coqc -Q specifications CRT -Q proofs CRT proofs/CRTLoops.v`.
+- [x] Audit `Print Assumptions` for every exported theorem; require closure.
 
 ### Task 4: Verification integration, evidence, and publication
 
@@ -95,12 +95,12 @@ whose result follows from the invariants, with no claim of Wasm refinement.
 `docs/evidence/implementation.json`, updated README and Makefile; generated-Wasm
 proof companions if the real verifier environment is accessible.
 
-- [ ] Make a single command build, run runtime and mutation tests, compile the
+- [x] Make a single command build, run runtime and mutation tests, compile the
   proofs, run `coqchk`, and audit all theorem assumptions.
-- [ ] Retry the real verifier container; user is enabling Docker access. Preserve
+- [x] Retry the real verifier container; user is enabling Docker access. Preserve
   raw generated definitions and target types in any discharge companion.
-- [ ] Discharge structural typing and behavioral obligations against real
+- [x] Discharge structural typing and behavioral obligations against real
   semantics; do not substitute the signature stub for this step.
-- [ ] Record artifact hashes, versions, proof endpoints and any unresolved gap.
-- [ ] Review the whole change independently, fix substantive findings, rerun
+- [x] Record artifact hashes, versions, proof endpoints and any unresolved gap.
+- [x] Review the whole change independently, fix substantive findings, rerun
   relevant checks, then publish the work with accurate proof status.
