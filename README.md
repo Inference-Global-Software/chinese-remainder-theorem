@@ -17,16 +17,22 @@ boundary](proofs/README.md).
 
 ## Run it
 
-Requirements: Python 3.9+, Node with WebAssembly/BigInt support, and the Inference
-compiler. The recorded compiler is `infc 0.0.6`, revision `95db5e4`, ABI `1.10`.
+Requirements: the `infs` Inference toolchain, Node with WebAssembly/BigInt
+support, and Python 3.9+ for tests and proof auditing. The recorded compiler is
+`infc 0.0.6`, revision `95db5e4`, ABI `1.10`.
 Checking the mathematical proofs additionally requires Coq 8.20.x (`coqc` and
 `coqchk`). Generated-Wasm proofs use the [pinned verifier container](scripts/wasm_environment/README.md).
 
 ```sh
-make demo INFC=/path/to/infc
+infs build
+node scripts/demo.mjs 2 6 5 9
 ```
 
-This compiles [src/crt.inf](src/crt.inf) in proof mode and runs the schedule example:
+[`Inference.toml`](Inference.toml) configures a native Inference project with
+[`src/main.inf`](src/main.inf) as its entry file. `infs build` emits
+`out/main.wasm` and `out/main.v` in proof mode; the Node demo calls the two
+exported CRT functions. See the [walkthrough](docs/walkthrough.md#run-the-example)
+for pinned toolchain setup. The schedule example prints:
 
 ```text
 First coincidence: 14
@@ -39,14 +45,16 @@ Pass your own residues and moduli in order `a m b n`:
 ```sh
 node scripts/demo.mjs 2 6 4 9
 node scripts/demo.mjs --json 2147483646 2147483647 2147483645 2147483646
-make check INFC=/path/to/infc
+python3 -m unittest discover -s tests -v
+python3 scripts/check_proofs.py
 ```
 
 All integer transport uses BigInt or decimal strings. The CLI rejects values
 outside signed `i64` before passing arguments to Wasm. Exit status is 0 for a
 solution, 1 for incompatibility, 2 for invalid input, and 3 for an execution/setup
-error. `make check` runs the runtime, CLI, mutation, and proof-audit tests, then
-compiles and independently checks the mathematical proofs.
+error. The Python commands run the runtime, CLI, mutation, and proof-audit tests,
+then compile and independently check the mathematical proofs. Tests build native
+projects through `infs`; set `INFC_PATH` to select a particular compiler.
 
 ## The problem
 
@@ -104,10 +112,11 @@ proof establishes unique normal results for actual Wasm executions; it connects
 the witnesses to all five original execution targets.
 
 The demonstration must execute the artifact covered by the proof evidence.
-Builds record compiler and artifact hashes in `build/crt/manifest.json`. The proof
+For auditing, `python3 scripts/build.py` runs `infs build` and records the project,
+toolchain, compiler, and artifact hashes in `out/manifest.json`. The proof
 checks write target names, source hashes, and assumption audits to
 `build/proofs/report.json` and `build/wasm-proofs/report.json`. Run the latter
-inside the verifier container with `make wasm-proofs`; see the
+inside the verifier container with `python3 scripts/check_wasm_proofs.py`; see the
 [reproduction commands](docs/implementation.md).
 
 See the [proposed design](docs/superpowers/specs/2026-10-23-generalized-crt-design.md)
@@ -117,7 +126,7 @@ for the interfaces, proof structure, and acceptance criteria.
 
 - [Exact theorem statements, loop invariants, and arithmetic bounds](docs/specifications.md).
 - [Rocq proposition definitions](specifications/CRTStatements.v) and [completed mathematical proofs](proofs/README.md).
-- [Inference implementation and contracts](src/crt.inf).
+- [Inference implementation and contracts](src/main.inf).
 - [Implementation checks and reproduction commands](docs/implementation.md).
 - [Historical feasibility check](docs/specification-check.md).
 

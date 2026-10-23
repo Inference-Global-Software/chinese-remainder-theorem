@@ -4,7 +4,7 @@ From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 From Wasm Require Import datatypes numerics operations opsem host.
 From WasmVerifier Require Import Assertions Semantics MultiExit Activation Verifier.
 From CRT Require Import CRTStatements.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTStorePure CRTModule CRTExecution.
 
 Set Implicit Arguments.
@@ -46,11 +46,11 @@ Definition crt_entry_admissible fdef args : Prop :=
   forall defaults, default_vals (modfunc_locals fdef) = Some defaults ->
     assertion_denote (crt_entry_valuation args defaults)
       (AS_base [::] (HA_and (args_pinned args (N.of_nat 0))
-         (func_pre_h crt.crt fdef))) ([::], aheap_empty).
+         (func_pre_h main.main fdef))) ([::], aheap_empty).
 
 Lemma crt_call_from_computes_at (i : nat) addr fdef params results args rs f H :
-  lookup_N (mod_funcs crt.crt) (N.of_nat i) = Some fdef ->
-  lookup_N (mod_types crt.crt) (modfunc_type fdef) = Some (Tf params results) ->
+  lookup_N (mod_funcs main.main) (N.of_nat i) = Some fdef ->
+  lookup_N (mod_types main.main) (modfunc_type fdef) = Some (Tf params results) ->
   lookup_N (inst_funcs (f_inst f)) (N.of_nat i) = Some addr ->
   lookup_N (s_funcs crt_store) addr =
     Some (FC_func_native (Tf params results) crt_inst fdef) ->
@@ -97,52 +97,52 @@ Proof.
 Qed.
 
 Lemma crt_gcd_entry m n :
-  crt_entry_admissible crt.gcd_positive [:: crt.Vi64 m; crt.Vi64 n].
+  crt_entry_admissible main.gcd_positive [:: main.Vi64 m; main.Vi64 n].
 Proof.
   move=> defaults Hdefaults. vm_compute in Hdefaults.
   inversion Hdefaults; subst defaults.
-  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h crt.crt
-    crt.gcd_positive args_pinned locals_typed assertion_denote hassert_denote
+  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h main.main
+    main.gcd_positive args_pinned locals_typed assertion_denote hassert_denote
     stack_denote term_eq term_denote loc_read lookup_N val_loc f_locs
-    modfunc_type modfunc_locals mod_types runtime_inst crt.Vi64].
+    modfunc_type modfunc_locals mod_types runtime_inst main.Vi64].
   repeat split; try reflexivity; try (eexists; split; reflexivity).
 Qed.
 
 Lemma crt_normalize_entry z d :
-  crt_entry_admissible crt.normalize [:: crt.Vi64 z; crt.Vi64 d].
+  crt_entry_admissible main.normalize [:: main.Vi64 z; main.Vi64 d].
 Proof.
   move=> defaults Hdefaults. vm_compute in Hdefaults.
   inversion Hdefaults; subst defaults.
-  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h crt.crt
-    crt.normalize args_pinned locals_typed assertion_denote hassert_denote
+  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h main.main
+    main.normalize args_pinned locals_typed assertion_denote hassert_denote
     stack_denote term_eq term_denote loc_read lookup_N val_loc f_locs
-    modfunc_type modfunc_locals mod_types runtime_inst crt.Vi64].
+    modfunc_type modfunc_locals mod_types runtime_inst main.Vi64].
   repeat split; try reflexivity; try (eexists; split; reflexivity).
 Qed.
 
 Lemma crt_inverse_entry B A :
-  crt_entry_admissible crt.inverse_coprime [:: crt.Vi64 B; crt.Vi64 A].
+  crt_entry_admissible main.inverse_coprime [:: main.Vi64 B; main.Vi64 A].
 Proof.
   move=> defaults Hdefaults. vm_compute in Hdefaults.
   inversion Hdefaults; subst defaults.
-  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h crt.crt
-    crt.inverse_coprime args_pinned locals_typed assertion_denote hassert_denote
+  cbn [crt_entry_valuation activation_frame crt_runtime func_pre_h main.main
+    main.inverse_coprime args_pinned locals_typed assertion_denote hassert_denote
     stack_denote term_eq term_denote loc_read lookup_N val_loc f_locs
-    modfunc_type modfunc_locals mod_types runtime_inst crt.Vi64].
+    modfunc_type modfunc_locals mod_types runtime_inst main.Vi64].
   repeat split; try reflexivity; try (eexists; split; reflexivity).
 Qed.
 
 Lemma crt_inverse_call_from_computes f H B A u :
   f_inst f = crt_inst ->
-  fun_computes_at crt_runtime 2%nat [:: crt.Vi64 B; crt.Vi64 A] [:: crt.Vi64 u] ->
+  fun_computes_at crt_runtime 2%nat [:: main.Vi64 B; main.Vi64 A] [:: main.Vi64 u] ->
   sem_triple_at crt_store f
-    (AS_base [:: T_const (crt.Vi64 B); T_const (crt.Vi64 A)] H)
-    [:: BI_call (N.of_nat 2)] (AS_base [:: T_const (crt.Vi64 u)] H).
+    (AS_base [:: T_const (main.Vi64 B); T_const (main.Vi64 A)] H)
+    [:: BI_call (N.of_nat 2)] (AS_base [:: T_const (main.Vi64 u)] H).
 Proof.
   move=> Hinst Hcompute.
   apply: (crt_call_from_computes_at (i := 2%nat) (addr := N.of_nat 2)
-    (fdef := crt.inverse_coprime)
-    (args := [:: crt.Vi64 B; crt.Vi64 A]) (rs := [:: crt.Vi64 u])
+    (fdef := main.inverse_coprime)
+    (args := [:: main.Vi64 B; main.Vi64 A]) (rs := [:: main.Vi64 u])
     (params := [:: T_num T_i64; T_num T_i64])
     (results := [:: T_num T_i64])); try reflexivity.
   - by rewrite Hinst.
@@ -153,40 +153,40 @@ Qed.
 Lemma crt_gcd_call f H m n :
   f_inst f = crt_inst -> moduli m n ->
   sem_triple_at crt_store f
-    (AS_base [:: T_const (crt.Vi64 m); T_const (crt.Vi64 n)] H)
+    (AS_base [:: T_const (main.Vi64 m); T_const (main.Vi64 n)] H)
     [:: BI_call (N.of_nat 0)]
-    (AS_base [:: T_const (crt.Vi64 (Z.gcd m n))] H).
+    (AS_base [:: T_const (main.Vi64 (Z.gcd m n))] H).
 Proof.
   move=> Hinst Hmod.
   apply: (crt_call_from_computes_at (i := 0%nat) (addr := N.of_nat 0)
-    (fdef := crt.gcd_positive)
-    (args := [:: crt.Vi64 m; crt.Vi64 n]) (rs := [:: crt.Vi64 (Z.gcd m n)])
+    (fdef := main.gcd_positive)
+    (args := [:: main.Vi64 m; main.Vi64 n]) (rs := [:: main.Vi64 (Z.gcd m n)])
     (params := [:: T_num T_i64; T_num T_i64])
     (results := [:: T_num T_i64])); try reflexivity.
   - by rewrite Hinst.
   - exact (crt_gcd_entry m n).
   - apply: fun_computes_at_of_computes; last exact (gcd_machine_computes Hmod).
-    exists crt.gcd_positive.
+    exists main.gcd_positive.
     eexists. split; reflexivity.
 Qed.
 
 Lemma crt_normalize_call f H z d :
   f_inst f = crt_inst -> word z -> 1 <= d <= M ->
   sem_triple_at crt_store f
-    (AS_base [:: T_const (crt.Vi64 z); T_const (crt.Vi64 d)] H)
+    (AS_base [:: T_const (main.Vi64 z); T_const (main.Vi64 d)] H)
     [:: BI_call (N.of_nat 1)]
-    (AS_base [:: T_const (crt.Vi64 (z mod d))] H).
+    (AS_base [:: T_const (main.Vi64 (z mod d))] H).
 Proof.
   move=> Hinst Hz Hd.
   apply: (crt_call_from_computes_at (i := 1%nat) (addr := N.of_nat 1)
-    (fdef := crt.normalize)
-    (args := [:: crt.Vi64 z; crt.Vi64 d]) (rs := [:: crt.Vi64 (z mod d)])
+    (fdef := main.normalize)
+    (args := [:: main.Vi64 z; main.Vi64 d]) (rs := [:: main.Vi64 (z mod d)])
     (params := [:: T_num T_i64; T_num T_i64])
     (results := [:: T_num T_i64])); try reflexivity.
   - by rewrite Hinst.
   - exact (crt_normalize_entry z d).
   - apply: fun_computes_at_of_computes; last exact (normalize_machine_computes Hz Hd).
-    exists crt.normalize.
+    exists main.normalize.
     eexists. split; reflexivity.
 Qed.
 

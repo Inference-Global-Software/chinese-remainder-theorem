@@ -15,26 +15,30 @@ discharge them. Compiling in proof mode alone does not complete those proofs.
 
 ## Run the example
 
-You need Git, Make, Python 3.9+, Node with WebAssembly and BigInt support, and
-`infc`, the Inference compiler. The recorded compiler is **0.0.6**, revision
+You need Git, Node with WebAssembly and BigInt support, and the `infs` Inference
+toolchain. Tests and proof auditing also use Python 3.9+. The recorded compiler is
+**0.0.6**, revision
 [`95db5e4170fdfd5080afdcb938c7704a790a7b24`](https://github.com/Inferara/inference/tree/95db5e4170fdfd5080afdcb938c7704a790a7b24),
 ABI **1.10**. The recorded runtime is Node **v26.10.0**.
 
-If you need to build that compiler, its source requires Rust 1.91 or newer:
+To build `infs` and its matching compiler, the source requires Rust 1.91 or newer:
 
 ```sh
 git clone https://github.com/Inferara/inference.git inference-compiler
 cd inference-compiler
 git checkout 95db5e4170fdfd5080afdcb938c7704a790a7b24
-cargo build --release -p inference-cli --bin infc
-export INFC="$(pwd)/target/release/infc"
+cargo build --release -p infs -p inference-cli
+export PATH="$(pwd)/target/release:$PATH"
+export INFC_PATH="$(pwd)/target/release/infc"
 cd ..
 ```
 
-With an existing compiler, set `INFC` to its absolute path instead:
+With an installed `infs` on `PATH`, it resolves its compiler automatically.
+To select a particular compiler for reproducing the evidence, use its native
+override:
 
 ```sh
-export INFC=/absolute/path/to/infc
+export INFC_PATH=/absolute/path/to/infc
 ```
 
 From the directory where you keep your checkouts:
@@ -42,7 +46,8 @@ From the directory where you keep your checkouts:
 ```sh
 git clone https://github.com/Inference-Global-Software/chinese-remainder-theorem.git
 cd chinese-remainder-theorem
-make demo INFC="$INFC"
+infs build
+node scripts/demo.mjs 2 6 5 9
 ```
 
 After the build messages, the demo prints:
@@ -53,8 +58,46 @@ Repeat period: 18
 All integer solutions: 14 + 18 * k
 ```
 
-`make demo` compiles [`src/crt.inf`](../src/crt.inf) in proof mode and executes
-`build/crt/crt.wasm`. Pass your own inputs in the order **`a m b n`**, meaning
+The checkout is a native Inference project:
+
+```text
+Inference.toml       project metadata and build settings
+src/main.inf        algorithm and 15 source specifications
+out/main.wasm       generated executable
+out/main.v          generated Rocq definitions and proof obligations
+proofs/             completed mathematical and execution proofs
+scripts/demo.mjs    command-line host for the exported functions
+```
+
+[`Inference.toml`](../Inference.toml) selects proof mode and keeps generated
+files separate from the completed proofs:
+
+```toml
+[package]
+name = "chinese-remainder-theorem"
+version = "0.1.0"
+infc_version = "0.0.6"
+description = "Generalized Chinese Remainder Theorem with proved WebAssembly contracts"
+
+[build]
+target = "wasm32"
+mode = "proof"
+
+[verification]
+output-dir = "out"
+```
+
+`infc_version` records the compiler version in the project metadata. To
+reproduce the exact compiler revision, use the pinned checkout and
+`INFC_PATH` above.
+
+`infs build` discovers the manifest and compiles
+[`src/main.inf`](../src/main.inf). The Node runner executes `out/main.wasm`
+through its exported CRT functions. This is a library project: project-mode
+`infs run` expects a function named `main`, while this example exports
+`crt_solve` and `crt_period`.
+
+Pass your own inputs in the order **`a m b n`**, meaning
 `x mod m = a` and `x mod n = b`:
 
 ```sh
@@ -386,10 +429,11 @@ source specifications, mathematical construction, and concrete function bodies.
 Run the runtime suite with the same compiler used for the demo:
 
 ```sh
-make test INFC="$INFC"
+python3 -m unittest discover -s tests -v
 ```
 
-The recorded suite has **13 test methods** and **23,274 public API vectors**.
+The recorded suite has **14 test methods** and **23,274 public API vectors**.
+The suite builds through `infs`, including a project-build-and-demo regression.
 It includes exhaustive small cases, deterministic large cases, invalid inputs,
 CLI checks, and three compiled faulty variants that expose missing
 compatibility checks, incorrect negative-remainder handling, and noncanonical
@@ -412,21 +456,23 @@ behavior is tested; the formal execution targets concern the Wasm functions.
 With Coq 8.20.x (`coqc` and `coqchk`) installed, check the mathematical proofs:
 
 ```sh
-make proofs
-# Runtime tests and mathematical proofs together:
-make check INFC="$INFC"
+python3 scripts/check_proofs.py
 ```
 
-`make check` does **not** include the generated-Wasm proof gate. For that gate,
+The generated-Wasm proof gate is a separate check. For that gate,
 build the [pinned verifier environment](../scripts/wasm_environment/README.md)
 and start its container with **this checkout** mounted at `/workspaces/crt`.
 Then, from the project root on the host:
 
 ```sh
-make build INFC="$INFC"
+python3 scripts/build.py
 docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
-  opam exec -- make wasm-proofs
+  opam exec -- python3 scripts/check_wasm_proofs.py
 ```
+
+`scripts/build.py` runs `infs build` and records the project, resolved compiler,
+and generated artifact hashes for the audit. The project manifest remains the
+build configuration; the helper adds provenance for formal verification.
 
 The gate checks artifact hashes and exact theorem types, recompiles the
 proofs, audits transitive assumptions, and independently checks compiled proof
@@ -435,7 +481,7 @@ depending on a generated admitted placeholder.
 
 | Generated record | What it identifies |
 | --- | --- |
-| `build/crt/manifest.json` | Compiler identity and source/Wasm/generated-Rocq hashes; building alone leaves proof status pending. |
+| `out/manifest.json` | Project and toolchain identity, compiler identity, and source/Wasm/generated-Rocq hashes, recorded by the audit build helper; building alone leaves proof status pending. |
 | `build/proofs/report.json` | Mathematical targets, source hashes, assumption audits, and kernel-check result. |
 | `build/wasm-proofs/report.json` | Generated contracts, five execution targets, artifact/proof hashes, verifier source identity, and assumption audits. |
 

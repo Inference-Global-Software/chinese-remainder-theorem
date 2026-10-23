@@ -6,7 +6,7 @@ From Wasm Require Import datatypes numerics operations host.
 From WasmVerifier Require Import Assertions Semantics NumericDischarge Automation Activation Verifier.
 From CRT Require Import CRTStatements CRTMath CRTLoops.
 From CRTWasm Require Import CRTAPIModel CRTContracts CRTExecution.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 
 Set Implicit Arguments.
 Unset Strict Implicit.
@@ -32,19 +32,19 @@ Lemma crt_payload_imp_rel V d nt op a b va vb p h :
   term_denote V a = Some va -> term_denote V b = Some vb ->
   (app_relop op va vb = true -> hassert_denote V (strictify d true p) h) ->
   hassert_denote V (strictify d true
-    (Himpl (HA_not (term_eq (T_relop nt op a b) (T_const (crt.Vi32 0)))) p)) h.
+    (Himpl (HA_not (term_eq (T_relop nt op a b) (T_const (main.Vi32 0)))) p)) h.
 Proof.
   move=> Ha Hb H. case E: (app_relop op va vb).
   - apply: hdenote_strictify_Himpl_intror. exact: H E.
   - apply: hdenote_strictify_Himpl_introl.
-    exists (crt.Vi32 0). split; last by []. by rewrite /= Ha Hb E.
+    exists (main.Vi32 0). split; last by []. by rewrite /= Ha Hb E.
 Qed.
 
 Lemma crt_payload_rel_true V d nt op a b va vb h :
   term_denote V a = Some va -> term_denote V b = Some vb ->
   app_relop op va vb = true ->
   hassert_denote V (strictify d true
-    (HA_not (term_eq (T_relop nt op a b) (T_const (crt.Vi32 0))))) h.
+    (HA_not (term_eq (T_relop nt op a b) (T_const (main.Vi32 0))))) h.
 Proof.
   move=> Ha Hb H. rewrite /term_eq /= Ha Hb H.
   split; [by eexists |]. split; [by eexists |].
@@ -55,7 +55,7 @@ Lemma crt_payload_imp_rel_false V d nt op a b va vb p h :
   term_denote V a = Some va -> term_denote V b = Some vb ->
   (app_relop op va vb = false -> hassert_denote V (strictify d true p) h) ->
   hassert_denote V (strictify d true
-    (Himpl (term_eq (T_relop nt op a b) (T_const (crt.Vi32 0))) p)) h.
+    (Himpl (term_eq (T_relop nt op a b) (T_const (main.Vi32 0))) p)) h.
 Proof.
   move=> Ha Hb H. case E: (app_relop op va vb).
   - apply: hdenote_strictify_Himpl_introl.
@@ -64,8 +64,8 @@ Proof.
 Qed.
 
 Lemma crt_payload_test_true V d t h :
-  term_denote V t = Some (crt.Vi32 1) ->
-  hassert_denote V (strictify d true (HA_not (term_eq t (T_const (crt.Vi32 0))))) h.
+  term_denote V t = Some (main.Vi32 1) ->
+  hassert_denote V (strictify d true (HA_not (term_eq t (T_const (main.Vi32 0))))) h.
 Proof.
   move=> Ht. rewrite /term_eq /= Ht.
   split; [by eexists|]. split; [by eexists|]. move=> [v [[<-] E]]. discriminate.
@@ -74,18 +74,18 @@ Qed.
 Lemma crt_payload_imp_test V d t b p h :
   term_denote V t = Some (VAL_int32 (wasm_bool b)) ->
   (b = true -> hassert_denote V (strictify d true p) h) ->
-  hassert_denote V (strictify d true (Himpl (HA_not (term_eq t (T_const (crt.Vi32 0)))) p)) h.
+  hassert_denote V (strictify d true (Himpl (HA_not (term_eq t (T_const (main.Vi32 0)))) p)) h.
 Proof.
   move=> Ht H. case E: b.
   - apply: hdenote_strictify_Himpl_intror. exact: H E.
-  - apply: hdenote_strictify_Himpl_introl. exists (crt.Vi32 0).
+  - apply: hdenote_strictify_Himpl_introl. exists (main.Vi32 0).
     split; last reflexivity. by rewrite Ht E.
 Qed.
 
 Lemma crt_payload_imp_test_false V d t b p h :
   term_denote V t = Some (VAL_int32 (wasm_bool b)) ->
   (b = false -> hassert_denote V (strictify d true p) h) ->
-  hassert_denote V (strictify d true (Himpl (term_eq t (T_const (crt.Vi32 0))) p)) h.
+  hassert_denote V (strictify d true (Himpl (term_eq t (T_const (main.Vi32 0))) p)) h.
 Proof.
   move=> Ht H. case E: b.
   - apply: hdenote_strictify_Himpl_introl. apply crt_payload_test_true. by rewrite Ht E.
@@ -99,8 +99,8 @@ Lemma crt_payload_short_and V d t u p h b1 b2 :
   hassert_denote V' (strictify d.+1 true p) h ->
   hassert_denote V (strictify d true
     (HA_ex (HA_and
-      (Hor (HA_and (HA_not (term_eq t (T_const (crt.Vi32 0)))) (term_eq (T_lvar 0) u))
-           (HA_and (term_eq t (T_const (crt.Vi32 0))) (term_eq (T_lvar 0) (T_const (crt.Vi32 0))))) p))) h.
+      (Hor (HA_and (HA_not (term_eq t (T_const (main.Vi32 0)))) (term_eq (T_lvar 0) u))
+           (HA_and (term_eq t (T_const (main.Vi32 0))) (term_eq (T_lvar 0) (T_const (main.Vi32 0))))) p))) h.
 Proof.
   cbn zeta. move=> Ht Hu Hp. apply: hdenote_strictify_Hex_intro.
   apply hdenote_strictify_Hand_true_intro; last exact Hp.
@@ -120,8 +120,8 @@ Lemma crt_payload_short_or V d t u p h b1 b2 :
   hassert_denote V' (strictify d.+1 true p) h ->
   hassert_denote V (strictify d true
     (HA_ex (HA_and
-      (Hor (HA_and (HA_not (term_eq t (T_const (crt.Vi32 0)))) (term_eq (T_lvar 0) (T_const (crt.Vi32 1))))
-           (HA_and (term_eq t (T_const (crt.Vi32 0))) (term_eq (T_lvar 0) u))) p))) h.
+      (Hor (HA_and (HA_not (term_eq t (T_const (main.Vi32 0)))) (term_eq (T_lvar 0) (T_const (main.Vi32 1))))
+           (HA_and (term_eq t (T_const (main.Vi32 0))) (term_eq (T_lvar 0) u))) p))) h.
 Proof.
   cbn zeta. move=> Ht Hu Hp. apply: hdenote_strictify_Hex_intro.
   apply hdenote_strictify_Hand_true_intro; last exact Hp.
@@ -162,9 +162,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_inverse_total V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec5) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec5) h.
 Proof.
-  move=> Hpin. unfold crt.crt__HelperContracts_hspec5, ktrue.
+  move=> Hpin. unfold main.main__HelperContracts_hspec5, ktrue.
   crt_payload_intro. move=> B HB. crt_payload_intro. move=> A HA.
   crt_payload_intro. move=> Hlo. crt_payload_intro. move=> Hlt.
   crt_payload_intro. move=> Hhi. crt_payload_zguards.
@@ -183,7 +183,7 @@ Proof.
     rewrite /= HA HB Hpin /crt_model_interp (proj2 (crt_moduli_b_spec _ _) Hmods).
     split; [by eexists |]. split; [by eexists |].
     move=> [v [[<-] Heq]].
-    have Hsigned := f_equal (fun v => match v with VAL_int64 x => Wasm_int.Int64.signed x | _ => 0%Z end) (f_equal (fun ov => match ov with Some v => v | None => crt.Vi64 0 end) Heq).
+    have Hsigned := f_equal (fun v => match v with VAL_int64 x => Wasm_int.Int64.signed x | _ => 0%Z end) (f_equal (fun ov => match ov with Some v => v | None => main.Vi64 0 end) Heq).
     change (1%Z = Wasm_int.Int64.signed (Wasm_int.Int64.repr (Z.gcd (Wasm_int.Int64.signed A) (Wasm_int.Int64.signed B)))) in Hsigned.
     rewrite crt_contract_signed_repr in Hsigned; last exact Hgword.
     apply Z.eqb_neq in Hcop. apply Hcop. symmetry. exact Hsigned.
@@ -191,21 +191,21 @@ Qed.
 
 Lemma crt_payload_gcd_term V a b m n :
   val_fun V = crt_model_interp ->
-  term_denote V a = Some (crt.Vi64 m) -> term_denote V b = Some (crt.Vi64 n) ->
+  term_denote V a = Some (main.Vi64 m) -> term_denote V b = Some (main.Vi64 n) ->
   word m -> word n -> moduli m n ->
-  term_denote V (T_app 0 [::a;b]) = Some (crt.Vi64 (Z.gcd m n)).
+  term_denote V (T_app 0 [::a;b]) = Some (main.Vi64 (Z.gcd m n)).
 Proof.
-  move=> Hpin Ha Hb Hm Hn Hd. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [crt.Vi64].
+  move=> Hpin Ha Hb Hm Hn Hd. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [main.Vi64].
   by rewrite (crt_i64_signed_repr Hm) (crt_i64_signed_repr Hn) (proj2 (crt_moduli_b_spec _ _) Hd).
 Qed.
 
 Lemma crt_payload_normalize_term V a b z d :
   val_fun V = crt_model_interp ->
-  term_denote V a = Some (crt.Vi64 z) -> term_denote V b = Some (crt.Vi64 d) ->
+  term_denote V a = Some (main.Vi64 z) -> term_denote V b = Some (main.Vi64 d) ->
   word z -> word d -> (1 <= d <= M)%Z ->
-  term_denote V (T_app 1 [::a;b]) = Some (crt.Vi64 (z mod d)).
+  term_denote V (T_app 1 [::a;b]) = Some (main.Vi64 (z mod d)).
 Proof.
-  move=> Hpin Ha Hb Hz Hd Hbound. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [crt.Vi64].
+  move=> Hpin Ha Hb Hz Hd Hbound. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [main.Vi64].
   rewrite (crt_i64_signed_repr Hz) (crt_i64_signed_repr Hd).
   have Hguard : ((1 <=? d) && (d <=? M))%Z = true.
   { apply/andb_true_iff. split; apply/Z.leb_le; lia. }
@@ -214,39 +214,39 @@ Qed.
 
 Lemma crt_payload_inverse_term V a b B A :
   val_fun V = crt_model_interp ->
-  term_denote V a = Some (crt.Vi64 B) -> term_denote V b = Some (crt.Vi64 A) ->
+  term_denote V a = Some (main.Vi64 B) -> term_denote V b = Some (main.Vi64 A) ->
   word B -> word A -> eea_inputs A B -> Z.gcd A B = 1%Z ->
-  term_denote V (T_app 2 [::a;b]) = Some (crt.Vi64 (crt_inverse_Z B A)).
+  term_denote V (T_app 2 [::a;b]) = Some (main.Vi64 (crt_inverse_Z B A)).
 Proof.
-  move=> Hpin Ha Hb HB HA Hin Hcop. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [crt.Vi64].
+  move=> Hpin Ha Hb HB HA Hin Hcop. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [main.Vi64].
   by rewrite (crt_i64_signed_repr HB) (crt_i64_signed_repr HA) (crt_payload_inverse_guard Hin Hcop).
 Qed.
 
 Lemma crt_payload_period_term V a b m n :
   val_fun V = crt_model_interp ->
-  term_denote V a = Some (crt.Vi64 m) -> term_denote V b = Some (crt.Vi64 n) ->
+  term_denote V a = Some (main.Vi64 m) -> term_denote V b = Some (main.Vi64 n) ->
   word m -> word n ->
-  term_denote V (T_app 3 [::a;b]) = Some (crt.Vi64 (crt_period_Z m n)).
+  term_denote V (T_app 3 [::a;b]) = Some (main.Vi64 (crt_period_Z m n)).
 Proof.
-  move=> Hpin Ha Hb Hm Hn. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [crt.Vi64].
+  move=> Hpin Ha Hb Hm Hn. cbn [term_denote]. rewrite Ha Hb Hpin /crt_model_interp. cbn [main.Vi64].
   by rewrite (crt_i64_signed_repr Hm) (crt_i64_signed_repr Hn).
 Qed.
 
 Lemma crt_payload_solve_term V ta tm tb tn a m b n :
   val_fun V = crt_model_interp ->
-  term_denote V ta = Some (crt.Vi64 a) -> term_denote V tm = Some (crt.Vi64 m) ->
-  term_denote V tb = Some (crt.Vi64 b) -> term_denote V tn = Some (crt.Vi64 n) ->
+  term_denote V ta = Some (main.Vi64 a) -> term_denote V tm = Some (main.Vi64 m) ->
+  term_denote V tb = Some (main.Vi64 b) -> term_denote V tn = Some (main.Vi64 n) ->
   word a -> word m -> word b -> word n ->
-  term_denote V (T_app 4 [::ta;tm;tb;tn]) = Some (crt.Vi64 (crt_solve_Z a m b n)).
+  term_denote V (T_app 4 [::ta;tm;tb;tn]) = Some (main.Vi64 (crt_solve_Z a m b n)).
 Proof.
   move=> Hpin Ha Hm Hb Hn HaW HmW HbW HnW. cbn [term_denote].
-  rewrite Ha Hm Hb Hn Hpin /crt_model_interp. cbn [crt.Vi64].
+  rewrite Ha Hm Hb Hn Hpin /crt_model_interp. cbn [main.Vi64].
   by rewrite (crt_i64_signed_repr HaW) (crt_i64_signed_repr HmW)
     (crt_i64_signed_repr HbW) (crt_i64_signed_repr HnW).
 Qed.
 
 Lemma crt_payload_imp_eq V d a b x y p h :
-  term_denote V a = Some (crt.Vi64 x) -> term_denote V b = Some (crt.Vi64 y) ->
+  term_denote V a = Some (main.Vi64 x) -> term_denote V b = Some (main.Vi64 y) ->
   word x -> word y ->
   (x = y -> hassert_denote V (strictify d true p) h) ->
   hassert_denote V (strictify d true (Himpl (term_eq a b) p)) h.
@@ -262,15 +262,15 @@ Proof.
 Qed.
 
 Lemma crt_payload_local_term V i x : val_loc V i = Some (VAL_int64 x) ->
-  term_denote V (T_local i) = Some (crt.Vi64 (Wasm_int.Int64.signed x)).
+  term_denote V (T_local i) = Some (main.Vi64 (Wasm_int.Int64.signed x)).
 Proof. by rewrite crt_contract_repr_signed. Qed.
 
 Lemma crt_payload_decoded_term V t x : term_denote V t = Some (VAL_int64 x) ->
-  term_denote V t = Some (crt.Vi64 (Wasm_int.Int64.signed x)).
+  term_denote V t = Some (main.Vi64 (Wasm_int.Int64.signed x)).
 Proof. by rewrite crt_contract_repr_signed. Qed.
 
 Lemma crt_payload_eq V d t u x y h :
-  term_denote V t = Some (crt.Vi64 x) -> term_denote V u = Some (crt.Vi64 y) ->
+  term_denote V t = Some (main.Vi64 x) -> term_denote V u = Some (main.Vi64 y) ->
   x = y -> hassert_denote V (strictify d true (term_eq t u)) h.
 Proof. move=> Ht Hu E. subst y. exact: hdenote_strictify_term_eq_intro Ht Hu. Qed.
 
@@ -303,7 +303,7 @@ Ltac crt_payload_eval :=
           exact (crt_payload_local_term H) end
     | |- term_denote ?V (T_lvar ?i) = _ =>
         let tv := eval cbn [term_denote val_push val_log nth_error] in (term_denote V (T_lvar i)) in
-        first [lazymatch tv with Some (crt.Vi64 ?z) => reflexivity end |
+        first [lazymatch tv with Some (main.Vi64 ?z) => reflexivity end |
           lazymatch tv with Some (VAL_int64 ?x) =>
             apply (@crt_payload_decoded_term V (T_lvar i) x); reflexivity end |
           reflexivity]
@@ -394,9 +394,9 @@ Ltac crt_payload_public_domain a Ha m Hm b Hb n Hn :=
   crt_payload_intro_eval; intros H8; crt_payload_decode H8.
 
 Lemma crt_payload_solve_compatibility V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec5) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec5) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec5, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec5, ktrue.
   crt_payload_public_domain a Ha m Hm b Hb n Hn.
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) by unfold moduli; lia.
   have Hdom : domain (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
@@ -411,9 +411,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_solve_soundness V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec6) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec6) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec6, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec6, ktrue.
   crt_payload_public_domain a Ha m Hm b Hb n Hn.
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) by unfold moduli; lia.
   have Hdom : domain (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
@@ -424,9 +424,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_canonical_uniqueness V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec7) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec7) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec7, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec7, ktrue.
   crt_payload_public_domain a Ha m Hm b Hb n Hn.
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) by unfold moduli; lia.
   have Hdom : domain (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
@@ -449,9 +449,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_solve_validation V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec3) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec3) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec3, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec3, ktrue.
   crt_payload_intro_eval. move=> a Ha. crt_payload_intro_eval. move=> m Hm.
   crt_payload_intro_eval. move=> b Hb. crt_payload_intro_eval. move=> n Hn.
   do 7 (eapply crt_payload_short_or; [crt_payload_eval | crt_payload_eval |]).
@@ -471,9 +471,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_period_contract V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec4) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec4) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec4, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec4, ktrue.
   crt_payload_intro_eval. move=> m Hm. crt_payload_intro_eval. move=> n Hn.
   do 3 (eapply crt_payload_short_or; [crt_payload_eval | crt_payload_eval |]).
   apply hdenote_strictify_Hand_true_intro.
@@ -499,9 +499,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_impossibility V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec8) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec8) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec8, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec8, ktrue.
   crt_payload_public_domain a Ha m Hm b Hb n Hn.
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) by unfold moduli; lia.
   have Hdom : domain (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
@@ -516,9 +516,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_exists_unique V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__PublicContracts_hspec9) h.
+  hassert_denote V (ktrue main.main__PublicContracts_hspec9) h.
 Proof.
-  move=> Hpin. unfold crt.crt__PublicContracts_hspec9, ktrue.
+  move=> Hpin. unfold main.main__PublicContracts_hspec9, ktrue.
   crt_payload_public_domain a Ha m Hm b Hb n Hn.
   have Hmods : moduli (Wasm_int.Int64.signed m) (Wasm_int.Int64.signed n) by unfold moduli; lia.
   have Hdom : domain (Wasm_int.Int64.signed a) (Wasm_int.Int64.signed m)
@@ -528,7 +528,7 @@ Proof.
   move=> Hcompatible.
   have [x [Hxword [[Hxlo Hxhi] [Hxm [Hxn [Hxs Hunique]]]]]] :=
     crt_solve_Z_existence_contract _ _ _ _ Hdom Hcompatible.
-  apply (@hdenote_strictify_Hex_intro V 0 _ h (crt.Vi64 x)).
+  apply (@hdenote_strictify_Hex_intro V 0 _ h (main.Vi64 x)).
   apply hdenote_strictify_Hand_true_intro; first crt_payload_assert.
   apply hdenote_strictify_Hand_true_intro; first crt_payload_assert.
   apply hdenote_strictify_Hand_true_intro; first crt_payload_assert.
@@ -545,9 +545,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_inverse_correct V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec6) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec6) h.
 Proof.
-  move=> Hpin. unfold crt.crt__HelperContracts_hspec6, ktrue.
+  move=> Hpin. unfold main.main__HelperContracts_hspec6, ktrue.
   crt_payload_intro. move=> B HB. crt_payload_intro. move=> A HA.
   crt_payload_intro. move=> Hlo. crt_payload_intro. move=> Hlt.
   crt_payload_intro. move=> Hhi. crt_payload_zguards.
@@ -568,9 +568,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_gcd_characterization V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec2) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec2) h.
 Proof.
-  move=> Hpin. unfold crt.crt__HelperContracts_hspec2, ktrue.
+  move=> Hpin. unfold main.main__HelperContracts_hspec2, ktrue.
   crt_payload_intro. move=> m Hm. crt_payload_intro. move=> n Hn.
   crt_payload_intro. move=> Hmlo. crt_payload_intro. move=> Hmhi.
   crt_payload_intro. move=> Hnlo. crt_payload_intro. move=> Hnhi. crt_payload_zguards.
@@ -595,9 +595,9 @@ Proof.
 Qed.
 
 Lemma crt_payload_normalize_correct V h : val_fun V = crt_model_interp ->
-  hassert_denote V (ktrue crt.crt__HelperContracts_hspec4) h.
+  hassert_denote V (ktrue main.main__HelperContracts_hspec4) h.
 Proof.
-  move=> Hpin. unfold crt.crt__HelperContracts_hspec4, ktrue.
+  move=> Hpin. unfold main.main__HelperContracts_hspec4, ktrue.
   crt_payload_intro. move=> z Hz. crt_payload_intro. move=> d Hd.
   crt_payload_intro. move=> Hlo. crt_payload_intro. move=> Hhi. crt_payload_zguards.
   have Hdw : (1 <= Wasm_int.Int64.signed d <= M)%Z by lia.
@@ -620,7 +620,7 @@ Print Assumptions crt_payload_normalize_correct.
 Print Assumptions crt_payload_gcd_characterization.
 
 Theorem crt_helper_payloads V h : val_fun V = crt_model_interp ->
-  Forall (fun P => hassert_denote V (ktrue P) h) crt.crt__HelperContracts_specs.
+  Forall (fun P => hassert_denote V (ktrue P) h) main.main__HelperContracts_specs.
 Proof.
   move=> Hpin. repeat constructor.
   - exact: (@crt_helper_gcd_total_payload crt_model_interp crt_model_gcd_total V h Hpin).
@@ -632,7 +632,7 @@ Proof.
 Qed.
 
 Theorem crt_public_payloads V h : val_fun V = crt_model_interp ->
-  Forall (fun P => hassert_denote V (ktrue P) h) crt.crt__PublicContracts_specs.
+  Forall (fun P => hassert_denote V (ktrue P) h) main.main__PublicContracts_specs.
 Proof.
   move=> Hpin. repeat constructor.
   - exact: (@crt_public_solve_total_payload crt_model_interp crt_model_solve_total V h Hpin).
@@ -649,28 +649,28 @@ Qed.
 Section Host.
 Context `{ho : host}.
 
-Theorem crt_helper_contracts_from_realization (rt : module_runtime crt.crt) :
+Theorem crt_helper_contracts_from_realization (rt : module_runtime main.main) :
   interp_realized_at rt crt_model_interp ->
-  ValidSpec crt.crt crt.crt__HelperContracts_specs.
+  ValidSpec main.main main.main__HelperContracts_specs.
 Proof.
   move=> Hreal. right. exists rt. move=> h.
   exists crt_model_interp. split; [exact Hreal |].
   move=> V Hpin. exact (@crt_helper_payloads V h Hpin).
 Qed.
 
-Theorem crt_public_contracts_from_realization (rt : module_runtime crt.crt) :
+Theorem crt_public_contracts_from_realization (rt : module_runtime main.main) :
   interp_realized_at rt crt_model_interp ->
-  ValidSpec crt.crt crt.crt__PublicContracts_specs.
+  ValidSpec main.main main.main__PublicContracts_specs.
 Proof.
   move=> Hreal. right. exists rt. move=> h.
   exists crt_model_interp. split; [exact Hreal |].
   move=> V Hpin. exact (@crt_public_payloads V h Hpin).
 Qed.
 
-Theorem crt_contracts_from_realization (rt : module_runtime crt.crt) :
+Theorem crt_contracts_from_realization (rt : module_runtime main.main) :
   interp_realized_at rt crt_model_interp ->
-  ValidSpec crt.crt crt.crt__HelperContracts_specs /\
-  ValidSpec crt.crt crt.crt__PublicContracts_specs.
+  ValidSpec main.main main.main__HelperContracts_specs /\
+  ValidSpec main.main main.main__PublicContracts_specs.
 Proof.
   move=> Hreal. split.
   - exact: crt_helper_contracts_from_realization Hreal.

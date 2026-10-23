@@ -6,7 +6,7 @@ From mathcomp Require Import ssreflect ssrfun ssrbool eqtype ssrnat seq.
 From Wasm Require Import datatypes numerics operations host.
 From WasmVerifier Require Import Assertions Semantics Activation Verifier.
 From CRT Require Import CRTStatements.
-From CRTGenerated Require Import crt.
+From CRTGenerated Require Import main.
 From CRTWasm Require Import CRTAPIModel CRTContracts CRTModule CRTExecution
   CRTInverseExecution CRTPublicExecution CRTSolveExecution CRTSpecPayloads.
 
@@ -15,7 +15,7 @@ Unset Strict Implicit.
 Unset Printing Implicit Defensive.
 
 Lemma crt_signed_argument (x : i64) :
-  crt.Vi64 (Wasm_int.Int64.signed x) = VAL_int64 x.
+  main.Vi64 (Wasm_int.Int64.signed x) = VAL_int64 x.
 Proof.
   change (VAL_int64 (Wasm_int.Int64.repr (Wasm_int.Int64.signed x)) = VAL_int64 x).
   by rewrite Wasm_int.Int64.repr_signed.
@@ -29,12 +29,12 @@ Proof.
   apply: crt_model_realized_from_execution.
   - move=> m n Hmod.
     apply: fun_computes_at_of_computes.
-    + exists crt.gcd_positive. eexists. split; reflexivity.
+    + exists main.gcd_positive. eexists. split; reflexivity.
     + have H := gcd_machine_computes Hmod.
       by rewrite !crt_signed_argument in H.
   - move=> z d Hd.
     apply: fun_computes_at_of_computes.
-    + exists crt.normalize. eexists. split; reflexivity.
+    + exists main.normalize. eexists. split; reflexivity.
     + have H := normalize_machine_computes (crt_contract_signed_word z) Hd.
       by rewrite !crt_signed_argument in H.
   - move=> b a Hin Hcop.
@@ -45,17 +45,17 @@ Proof.
 Qed.
 
 Theorem checked_helper_contracts :
-  ValidSpec crt.crt crt.crt__HelperContracts_specs.
+  ValidSpec main.main main.main__HelperContracts_specs.
 Proof. exact: crt_helper_contracts_from_realization checked_model_realized. Qed.
 
 Theorem checked_public_contracts :
-  ValidSpec crt.crt crt.crt__PublicContracts_specs.
+  ValidSpec main.main main.main__PublicContracts_specs.
 Proof. exact: crt_public_contracts_from_realization checked_model_realized. Qed.
 
 Theorem checked_crt_certificate :
-  ValidModule crt.crt /\
-  ValidSpec crt.crt crt.crt__HelperContracts_specs /\
-  ValidSpec crt.crt crt.crt__PublicContracts_specs.
+  ValidModule main.main /\
+  ValidSpec main.main main.main__HelperContracts_specs /\
+  ValidSpec main.main main.main__PublicContracts_specs.
 Proof.
   split; first exact: checked_valid_module.
   split; [exact: checked_helper_contracts | exact: checked_public_contracts].

@@ -15,7 +15,7 @@ remain uninstantiated; [proof coverage](../proofs/README.md) explains the distin
 bodies and 15 source contracts. Keeping bodies in the probe makes applications
 refer to actual compiled functions. These bodies are an unverified prototype,
 not the project's verified implementation.
-The implemented and tested entry point is [`src/crt.inf`](../src/crt.inf).
+The implemented and tested entry point is [`src/main.inf`](../src/main.inf).
 
 ## Definitions and quantifier domains
 
