@@ -1,0 +1,55 @@
+{
+  "status": "expressibility_checked_not_proved",
+  "compiler": {
+    "version": "infc 0.0.6",
+    "reported_commit": "95db5e4",
+    "abi": "1.10",
+    "binary_sha256": "f1a21617e2dbdfdbb4dfed5c46a75edd9db6bfb787e447e1883d637d3d3f9b84",
+    "source_revision": "95db5e4170fdfd5080afdcb938c7704a790a7b24",
+    "source_tree_clean": true
+  },
+  "tools": {
+    "coqc": "The Coq Proof Assistant, version 8.20.1\ncompiled with OCaml 5.4.0",
+    "node": "v26.10.0"
+  },
+  "inputs": {
+    "probes/crt_contracts.inf": "ff88a58661d41d903ba4490edb287034ea48be97638c9ca074a28ed073a36615",
+    "probes/rejected_loop.inf": "4618b53f5c29c53486fbd8d65c334c4f4faa6f72ebc8c394874e495fcd4e2562",
+    "probes/rejected_mutation.inf": "2432c03a7616a38ddda70154a8ff6adf333751c5a8a7924c119f0c1c14706de0",
+    "specifications/CRTStatements.v": "beafca09d138a618c9e9fa80430cb98cf092b19c5fcbf0bd4a36e95e885f262d",
+    "scripts/check_runtime.mjs": "5cc6f2ff4a3ae6799424822320050368864c44947a1446f1cf150b07371b61c4",
+    "scripts/check_specifications.py": "a752e1c9da93e892900200966ec8ca84d51667f6903b061c776260606fdf1a13"
+  },
+  "expected_rejections": {
+    "rejected_loop.inf": "P002",
+    "rejected_mutation.inf": "P003"
+  },
+  "translation": {
+    "source_contracts": 15,
+    "emitted_assertions": 15,
+    "generated_admissions": 3,
+    "wasm_sha256": "48e3af7df2a76386bf7e5127f17211f036f212af3525ab5a526c9174ebd0019f",
+    "rocq_sha256": "a38f0ca080a65436790ebdeb5844b8832e6c7b1e98827ac97384618bfed36251"
+  },
+  "mathematical_statements": {
+    "elaboration": "passed",
+    "proofs_claimed": 0,
+    "proposition_definitions": 21
+  },
+  "generated_rocq_signature_check": "passed_against_compiler_stub_only",
+  "runtime": {
+    "passed": 44719,
+    "by_function": {
+      "crt_solve": 21933,
+      "crt_period": 1341,
+      "gcd_positive": 16384,
+      "inverse_coprime": 5021,
+      "normalize": 40
+    }
+  },
+  "invariant_model_checks": {
+    "input_pairs": 9155,
+    "visited_states": 56995,
+    "checked_steps": 47840
+  }
+}

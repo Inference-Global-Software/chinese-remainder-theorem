@@ -1,0 +1,8 @@
+// Expected proof translation failure: P003 (reassignment inside a spec).
+spec MutationProbe {
+    fn unsupported_assignment(n: i64) forall {
+        let mut x: i64 = n;
+        x = 0;
+        assert(x == 0);
+    }
+}

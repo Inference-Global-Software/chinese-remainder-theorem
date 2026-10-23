@@ -1,0 +1,6 @@
+// Expected proof translation failure: P002 (loop inside a spec).
+spec LoopProbe {
+    fn unsupported_loop(n: i64) forall {
+        loop n > 0 { assert(n > 0); }
+    }
+}

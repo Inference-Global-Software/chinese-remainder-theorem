@@ -2,7 +2,8 @@
 
 Date: 2026-10-23
 
-Status: proposed design for review; implementation and proofs have not started.
+Status: design baseline. [Exact specifications and feasibility probes](../../specifications.md)
+have been added; the verified implementation and completed proofs remain future work.
 
 Repository: `Inference-Global-Software/chinese-remainder-theorem`.
 

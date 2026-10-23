@@ -1,0 +1,204 @@
+// Specification feasibility harness, NOT a verified implementation.
+// Executable bodies make every specification application refer to real code.
+// The generated Rocq obligations still require proofs. See docs/specifications.md.
+
+pub fn gcd_positive(m: i64, n: i64) -> i64 {
+    let mut r0: i64 = m;
+    let mut r1: i64 = n;
+    loop r1 > 0 {
+        let r2: i64 = r0 % r1;
+        r0 = r1;
+        r1 = r2;
+    }
+    return r0;
+}
+
+pub fn normalize(z: i64, d: i64) -> i64 {
+    let r: i64 = z % d;
+    if r < 0 { return r + d; }
+    return r;
+}
+
+// Contract: 1 <= B < A <= 2147483647 and gcd(A, B) = 1.
+// s0,s1 retain the complete Bezout recurrence for the proposed invariant.
+pub fn inverse_coprime(B: i64, A: i64) -> i64 {
+    let mut r0: i64 = A;
+    let mut r1: i64 = B;
+    let mut s0: i64 = 1;
+    let mut s1: i64 = 0;
+    let mut t0: i64 = 0;
+    let mut t1: i64 = 1;
+    loop r1 > 0 {
+        let q: i64 = r0 / r1;
+        let r2: i64 = r0 % r1;
+        let s2: i64 = s0 - q * s1;
+        let t2: i64 = t0 - q * t1;
+        r0 = r1;
+        r1 = r2;
+        s0 = s1;
+        s1 = s2;
+        t0 = t1;
+        t1 = t2;
+    }
+    return normalize(t0, A);
+}
+
+pub fn crt_period(m: i64, n: i64) -> i64 {
+    if m < 1 || m > 2147483647 || n < 1 || n > 2147483647 {
+        return -2;
+    }
+    let g: i64 = gcd_positive(m, n);
+    return (m / g) * n;
+}
+
+pub fn crt_solve(a: i64, m: i64, b: i64, n: i64) -> i64 {
+    if m < 1 || m > 2147483647 || n < 1 || n > 2147483647 {
+        return -2;
+    }
+    if a < 0 || a >= m || b < 0 || b >= n { return -2; }
+    let g: i64 = gcd_positive(m, n);
+    let delta: i64 = b - a;
+    if delta % g != 0 { return -1; }
+    let m1: i64 = m / g;
+    let n1: i64 = n / g;
+    if n1 == 1 { return a; }
+    let B: i64 = m1 % n1;
+    let u: i64 = inverse_coprime(B, n1);
+    let t: i64 = normalize((delta / g) * u, n1);
+    return a + m * t;
+}
+
+spec HelperContracts {
+    fn gcd_total(m: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        gcd_positive(m, n);
+    }
+
+    fn gcd_characterization(m: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        let g: i64 = gcd_positive(m, n);
+        assert(1 <= g && g <= m && g <= n);
+        assert(m % g == 0 && n % g == 0);
+        let d: i64 = @;
+        assume { assert(1 <= d && d <= 2147483647); }
+        if m % d == 0 && n % d == 0 { assert(g % d == 0); }
+    }
+
+    fn normalize_total(z: i64, d: i64) forall {
+        assume { assert(1 <= d && d <= 2147483647); }
+        normalize(z, d);
+    }
+
+    fn normalize_correct(z: i64, d: i64) forall {
+        assume { assert(1 <= d && d <= 2147483647); }
+        let r: i64 = normalize(z, d);
+        assert(0 <= r && r < d);
+        // Avoid r-z, which need not fit i64 for arbitrary z.
+        if z % d < 0 { assert(r == z % d + d); }
+        else { assert(r == z % d); }
+    }
+
+    fn inverse_total(B: i64, A: i64) forall {
+        assume { assert(1 <= B && B < A && A <= 2147483647); }
+        assume { assert(gcd_positive(A, B) == 1); }
+        inverse_coprime(B, A);
+    }
+
+    fn inverse_correct(B: i64, A: i64) forall {
+        assume { assert(1 <= B && B < A && A <= 2147483647); }
+        assume { assert(gcd_positive(A, B) == 1); }
+        let u: i64 = inverse_coprime(B, A);
+        assert(0 <= u && u < A);
+        assert((B * u) % A == 1);
+    }
+}
+
+spec PublicContracts {
+    // Bare calls encode HA_app_ok: prove terminating, nontrapping execution.
+    // No call-based assumptions may filter out bad public inputs here.
+    fn solve_total(a: i64, m: i64, b: i64, n: i64) forall {
+        crt_solve(a, m, b, n);
+    }
+
+    fn period_total(m: i64, n: i64) forall {
+        crt_period(m, n);
+    }
+
+    fn solve_validation(a: i64, m: i64, b: i64, n: i64) forall {
+        let x: i64 = crt_solve(a, m, b, n);
+        if m < 1 || m > 2147483647 || n < 1 || n > 2147483647
+            || a < 0 || a >= m || b < 0 || b >= n {
+            assert(x == -2);
+        } else { assert(x >= -1); }
+    }
+
+    fn period_contract(m: i64, n: i64) forall {
+        let L: i64 = crt_period(m, n);
+        if m < 1 || m > 2147483647 || n < 1 || n > 2147483647 {
+            assert(L == -2);
+        } else {
+            let g: i64 = gcd_positive(m, n);
+            assert(L == (m / g) * n);
+            assert(1 <= L && L <= 4611686014132420609);
+        }
+    }
+
+    fn solve_compatibility(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        assume { assert(0 <= a && a < m && 0 <= b && b < n); }
+        let g: i64 = gcd_positive(m, n);
+        let x: i64 = crt_solve(a, m, b, n);
+        if (b - a) % g == 0 { assert(x >= 0); }
+        else { assert(x == -1); }
+    }
+
+    fn solve_soundness(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        assume { assert(0 <= a && a < m && 0 <= b && b < n); }
+        let x: i64 = crt_solve(a, m, b, n);
+        if x >= 0 {
+            assert(x < crt_period(m, n));
+            assert(x % m == a && x % n == b);
+        }
+    }
+
+    fn canonical_uniqueness(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        assume { assert(0 <= a && a < m && 0 <= b && b < n); }
+        let y: i64 = @;
+        let L: i64 = crt_period(m, n);
+        assume { assert(0 <= y && y < L); }
+        if y % m == a && y % n == b {
+            assert(y == crt_solve(a, m, b, n));
+        }
+    }
+
+    fn incompatible_has_no_canonical_witness(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        assume { assert(0 <= a && a < m && 0 <= b && b < n); }
+        let y: i64 = @;
+        assume { assert(0 <= y && y < crt_period(m, n)); }
+        if crt_solve(a, m, b, n) == -1 {
+            assert(y % m != a || y % n != b);
+        }
+    }
+
+    // Tests actual forall/exists/forall alternation, without operational unique.
+    fn compatible_exists_unique(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && m <= 2147483647 && 1 <= n && n <= 2147483647); }
+        assume { assert(0 <= a && a < m && 0 <= b && b < n); }
+        assume { assert((b - a) % gcd_positive(m, n) == 0); }
+        exists {
+            let x: i64 = @;
+            // Assertions constrain the witness; assume would change the logic.
+            assert(0 <= x && x < crt_period(m, n));
+            assert(x % m == a && x % n == b);
+            assert(x == crt_solve(a, m, b, n));
+            forall {
+                let y: i64 = @;
+                assume { assert(0 <= y && y < crt_period(m, n)); }
+                if y % m == a && y % n == b { assert(y == x); }
+            }
+        }
+    }
+}

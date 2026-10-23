@@ -3,10 +3,11 @@
 A planned constructive implementation and formal verification of the generalized
 Chinese Remainder Theorem (CRT), written in Inference and compiled to WebAssembly.
 
-**Status: design stage.** This repository currently contains the project scope,
-design, and an annotated research collection. The solver, executable artifacts,
-and completed proofs are not present yet.
-No verification result is claimed.
+**Status: specifications and feasibility probes.** This repository contains the
+project design, exact theorem targets and loop invariants, an annotated research
+collection, and an unverified executable probe with Inference source contracts.
+The contracts compile in proof mode; the generated proof obligations remain open.
+There is no verified implementation or certified release yet.
 
 ## The problem
 
@@ -63,6 +64,19 @@ reproduction commands will be recorded before any verified release is claimed.
 
 See the [proposed design](docs/superpowers/specs/2026-10-23-generalized-crt-design.md)
 for the interfaces, proof structure, and acceptance criteria.
+
+## Specifications and feasibility results
+
+- [Exact theorem statements, loop invariants, and arithmetic bounds](docs/specifications.md).
+- [Machine-readable Rocq proposition definitions](specifications/CRTStatements.v).
+- [Inference contracts and executable feasibility bodies](probes/crt_contracts.inf).
+- [Check results and reproduction commands](docs/specification-check.md).
+
+All 15 source contracts translated, including nested existence/uniqueness
+quantifiers. The mathematical statements type-check, and the proof-mode Wasm
+passed 44,719 finite runtime checks. Loop invariants must be supplied in Rocq;
+source quantifiers are bounded by their machine types. These checks establish
+expressibility and exercise the prototype, not proof completion.
 
 ## References
 
