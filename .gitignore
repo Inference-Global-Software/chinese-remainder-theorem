@@ -5,3 +5,5 @@
 *.glob
 .*.aux
 __pycache__/
+/.worktrees/
+/.superpowers/
