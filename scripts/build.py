@@ -21,17 +21,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--infs', default=os.environ.get('INFS', 'infs'))
     parser.add_argument('--infc', help='Explicit compiler override, equivalent to INFC_PATH')
+    parser.add_argument('--project-dir', type=Path, default=ROOT,
+                        help='Native project directory (default: repository root)')
     args = parser.parse_args()
+    project = args.project_dir.resolve()
     infs = Path(shutil.which(args.infs) or args.infs).resolve()
-    source = ROOT / 'src/main.inf'
-    output = ROOT / 'out'
+    source = project / 'src/main.inf'
+    output = project / 'out'
     output.mkdir(parents=True, exist_ok=True)
     for name in ('main.wasm', 'main.v', 'manifest.json'):
         (output / name).unlink(missing_ok=True)
     env = dict(os.environ, INFS_VERBOSE='1')
     if args.infc:
         env['INFC_PATH'] = str(Path(shutil.which(args.infc) or args.infc).resolve())
-    build = subprocess.run([str(infs), 'build'], cwd=ROOT, env=env, text=True,
+    build = subprocess.run([str(infs), 'build'], cwd=project, env=env, text=True,
                            stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print(build.stdout, end='')
     print(build.stderr, end='', file=sys.stderr)
@@ -49,7 +52,7 @@ def main():
 
     manifest = {
         'mode': 'proof',
-        'project': {'path': 'Inference.toml', 'sha256': sha256(ROOT / 'Inference.toml')},
+        'project': {'path': 'Inference.toml', 'sha256': sha256(project / 'Inference.toml')},
         'infs': {'version': subprocess.check_output([str(infs), '--version'], text=True).strip(),
                  'sha256': sha256(infs)},
         'compiler': {'version': version('--version'), 'commit': version('--commit-hash'),

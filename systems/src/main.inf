@@ -1,0 +1,237 @@
+// Finite generalized CRT, capacity 16, full positive signed-i64 moduli.
+// Errors: invalid -2, incompatible -1, unrepresentable period -3.
+// Scalars have source contracts; batch execution contracts are Rocq targets.
+// Array inputs are read-only complete 128-byte regions under the compiler ABI.
+
+fn gcd_positive(m: i64, n: i64) -> i64 {
+    let mut r0: i64 = m;
+    let mut r1: i64 = n;
+    loop r1 > 0 {
+        let r2: i64 = r0 % r1;
+        r0 = r1;
+        r1 = r2;
+    }
+    return r0;
+}
+
+fn normalize(z: i64, d: i64) -> i64 {
+    let r: i64 = z % d;
+    if r < 0 { return r + d; }
+    return r;
+}
+
+// Contract: 1 <= B < A <= 9223372036854775807 and gcd(A, B) = 1.
+// s0,s1 retain the complete Bezout recurrence for the proposed invariant.
+fn inverse_coprime(B: i64, A: i64) -> i64 {
+    let mut r0: i64 = A;
+    let mut r1: i64 = B;
+    let mut s0: i64 = 1;
+    let mut s1: i64 = 0;
+    let mut t0: i64 = 0;
+    let mut t1: i64 = 1;
+    loop r1 > 0 {
+        let q: i64 = r0 / r1;
+        let r2: i64 = r0 % r1;
+        let s2: i64 = s0 - q * s1;
+        let t2: i64 = t0 - q * t1;
+        r0 = r1;
+        r1 = r2;
+        s0 = s1;
+        s1 = s2;
+        t0 = t1;
+        t1 = t2;
+    }
+    return normalize(t0, A);
+}
+
+// Preconditions: 0 <= x,y < d and 1 <= d <= MAX.
+fn add_mod(x: i64, y: i64, d: i64) -> i64 {
+    if x >= d - y { return x - (d - y); }
+    return x + y;
+}
+
+// Repeated doubling never forms the potentially unrepresentable product x*y.
+fn mul_mod(x: i64, y: i64, d: i64) -> i64 {
+    let mut acc: i64 = 0;
+    let mut factor: i64 = x;
+    let mut remaining: i64 = y;
+    loop remaining > 0 {
+        if remaining % 2 == 1 { acc = add_mod(acc, factor, d); }
+        remaining = remaining / 2;
+        factor = add_mod(factor, factor, d);
+    }
+    return acc;
+}
+
+pub fn crt_merge_solve(a: i64, m: i64, b: i64, n: i64) -> i64 {
+    if m < 1 || n < 1 || a < 0 || a >= m || b < 0 || b >= n { return -2; }
+    let g: i64 = gcd_positive(m, n);
+    let delta: i64 = b - a;
+    if delta % g != 0 { return -1; }
+    let m1: i64 = m / g;
+    if m1 > 9223372036854775807 / n { return -3; }
+    let n1: i64 = n / g;
+    if n1 == 1 { return a; }
+    let B: i64 = m1 % n1;
+    let u: i64 = inverse_coprime(B, n1);
+    let t: i64 = mul_mod(normalize(delta / g, n1), u, n1);
+    // t < n/g and a < m, hence a+m*t < m*(n/g) <= MAX.
+    return a + m * t;
+}
+
+pub fn crt_merge_period(a: i64, m: i64, b: i64, n: i64) -> i64 {
+    if m < 1 || n < 1 || a < 0 || a >= m || b < 0 || b >= n { return -2; }
+    let g: i64 = gcd_positive(m, n);
+    if (b - a) % g != 0 { return -1; }
+    let m1: i64 = m / g;
+    if m1 > 9223372036854775807 / n { return -3; }
+    return m1 * n;
+}
+
+// Validation and compatibility must finish before any prefix overflow is used.
+// Forwarding read-only arrays does not allocate or copy an aggregate.
+fn system_classify(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {
+    if count < 0 || count > 16 { return -2; }
+    let mut status: i64 = 0;
+    let mut i: i32 = 0;
+    loop i < count {
+        if moduli[i] < 1 || residues[i] < 0 || residues[i] >= moduli[i] { status = -2; break; }
+        i = i + 1;
+    }
+    if status != 0 { return status; }
+    i = 0;
+    loop i < count {
+        let mut j: i32 = i + 1;
+        loop j < count {
+            let g: i64 = gcd_positive(moduli[i], moduli[j]);
+            if (residues[j] - residues[i]) % g != 0 { status = -1; break; }
+            j = j + 1;
+        }
+        if status != 0 { break; }
+        i = i + 1;
+    }
+    return status;
+}
+
+pub fn crt_system_solve(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {
+    if count < 0 || count > 16 { return -2; }
+    let status: i64 = system_classify(residues, moduli, count);
+    if status != 0 { return status; }
+    let mut r: i64 = 0;
+    let mut L: i64 = 1;
+    let mut i: i32 = 0;
+    loop i < count {
+        let next_r: i64 = crt_merge_solve(r, L, residues[i], moduli[i]);
+        if next_r < 0 { r = next_r; break; }
+        L = crt_merge_period(r, L, residues[i], moduli[i]);
+        r = next_r;
+        i = i + 1;
+    }
+    return r;
+}
+
+pub fn crt_system_period(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {
+    if count < 0 || count > 16 { return -2; }
+    let status: i64 = system_classify(residues, moduli, count);
+    if status != 0 { return status; }
+    let mut L: i64 = 1;
+    let mut i: i32 = 0;
+    loop i < count {
+        let g: i64 = gcd_positive(L, moduli[i]);
+        let factor: i64 = L / g;
+        if factor > 9223372036854775807 / moduli[i] { L = -3; break; }
+        L = factor * moduli[i];
+        i = i + 1;
+    }
+    return L;
+}
+
+spec HelperContracts {
+    fn gcd_total(m: i64, n: i64) forall {
+        assume { assert(1 <= m && 1 <= n); }
+        gcd_positive(m, n);
+    }
+    fn gcd_characterization(m: i64, n: i64) forall {
+        assume { assert(1 <= m && 1 <= n); }
+        let g: i64 = gcd_positive(m, n);
+        assert(1 <= g && g <= m && g <= n);
+        assert(m % g == 0 && n % g == 0);
+        let d: i64 = @;
+        assume { assert(1 <= d); }
+        if m % d == 0 && n % d == 0 { assert(g % d == 0); }
+    }
+    fn normalize_total(z: i64, d: i64) forall {
+        assume { assert(1 <= d); }
+        normalize(z, d);
+    }
+    fn normalize_correct(z: i64, d: i64) forall {
+        assume { assert(1 <= d); }
+        let r: i64 = normalize(z, d);
+        assert(0 <= r && r < d);
+        if z % d < 0 { assert(r == z % d + d); }
+        else { assert(r == z % d); }
+    }
+    fn add_mod_correct(x: i64, y: i64, d: i64) forall {
+        assume { assert(1 <= d && 0 <= x && x < d && 0 <= y && y < d); }
+        let r: i64 = add_mod(x, y, d);
+        assert(0 <= r && r < d);
+        if x >= d - y { assert(r == x - (d - y)); }
+        else { assert(r == x + y); }
+    }
+    fn mul_mod_range(x: i64, y: i64, d: i64) forall {
+        assume { assert(1 <= d && 0 <= x && x < d && 0 <= y && y < d); }
+        let r: i64 = mul_mod(x, y, d);
+        assert(0 <= r && r < d);
+    }
+    fn inverse_total(B: i64, A: i64) forall {
+        assume { assert(1 <= B && B < A); }
+        assume { assert(gcd_positive(A, B) == 1); }
+        inverse_coprime(B, A);
+    }
+    fn inverse_correct(B: i64, A: i64) forall {
+        assume { assert(1 <= B && B < A); }
+        assume { assert(gcd_positive(A, B) == 1); }
+        let u: i64 = inverse_coprime(B, A);
+        assert(0 <= u && u < A);
+        assert(mul_mod(B, u, A) == 1);
+    }
+}
+
+spec PublicContracts {
+    // These calls specify terminating, nontrapping scalar execution.
+    fn solve_total(a: i64, m: i64, b: i64, n: i64) forall {
+        crt_merge_solve(a, m, b, n);
+    }
+    fn period_total(a: i64, m: i64, b: i64, n: i64) forall {
+        crt_merge_period(a, m, b, n);
+    }
+    fn scalar_classification(a: i64, m: i64, b: i64, n: i64) forall {
+        let x: i64 = crt_merge_solve(a, m, b, n);
+        let L: i64 = crt_merge_period(a, m, b, n);
+        if m < 1 || n < 1 || a < 0 || a >= m || b < 0 || b >= n {
+            assert(x == -2 && L == -2);
+        } else {
+            let g: i64 = gcd_positive(m, n);
+            if (b - a) % g != 0 { assert(x == -1 && L == -1); }
+            else {
+                if m / g > 9223372036854775807 / n { assert(x == -3 && L == -3); }
+                else { assert(x >= 0 && L == (m / g) * n && L >= 1); }
+            }
+        }
+    }
+    fn solve_soundness(a: i64, m: i64, b: i64, n: i64) forall {
+        let x: i64 = crt_merge_solve(a, m, b, n);
+        if x >= 0 {
+            let L: i64 = crt_merge_period(a, m, b, n);
+            assert(0 <= x && x < L);
+            assert(x % m == a && x % n == b);
+        }
+    }
+    fn canonical_uniqueness(a: i64, m: i64, b: i64, n: i64) forall {
+        assume { assert(1 <= m && 1 <= n && 0 <= a && a < m && 0 <= b && b < n); }
+        let L: i64 = crt_merge_period(a, m, b, n);
+        let y: i64 = @;
+        assume { assert(0 <= y && y < L); }
+        if y % m == a && y % n == b { assert(y == crt_merge_solve(a, m, b, n)); }
+    }
+}

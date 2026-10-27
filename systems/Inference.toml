@@ -1,0 +1,12 @@
+[package]
+name = "finite-system-crt"
+version = "0.1.0"
+infc_version = "0.0.6"
+description = "Finite-system CRT with full-width scalar merges"
+
+[build]
+target = "wasm32"
+mode = "proof"
+
+[verification]
+output-dir = "out"

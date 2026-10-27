@@ -10,3 +10,7 @@ __pycache__/
 /.superpowers/
 .lia.cache
 .nia.cache
+
+# Native finite-system project build artifacts.
+/systems/build/
+/systems/out/
