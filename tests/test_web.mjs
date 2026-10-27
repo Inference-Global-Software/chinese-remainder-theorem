@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import { readFile, mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 import { createSolver, InputError } from '../web/solver.mjs';
 import { startServer } from '../web/serve.mjs';
 
@@ -82,4 +83,27 @@ test('server refuses missing or changed artifacts with actionable startup errors
   await assert.rejects(startServer({ root: dir, port: 0 }), /match.*verified|integrity/i);
   await rm(join(dir, 'systems/out/main.wasm'));
   await assert.rejects(startServer({ root: dir, port: 0 }), /infs build/i);
+});
+test('served proof excerpts match the evidence-bound sources and recorded audits', async (t) => {
+  const server = await startServer({ port: 0 });
+  t.after(() => new Promise((resolve) => server.close(resolve)));
+  const response = await fetch(`http://127.0.0.1:${server.address().port}/proof-data.json`);
+  assert.equal(response.status, 200);
+  const data = await response.json();
+  for (const topic of Object.values(data.topics)) {
+    for (const part of [...topic.statement, ...topic.proof, ...topic.inference]) {
+      const source = await readFile(new URL(part.path, root));
+      assert.equal(createHash('sha256').update(source).digest('hex'), evidence.bound_inputs[part.path], part.path);
+      assert.equal(part.sha256, evidence.bound_inputs[part.path], part.path);
+      assert.equal(part.text, source.toString('utf8').split('\n').slice(part.start - 1, part.end).join('\n'), part.path);
+    }
+  }
+  const math = evidence.fresh_mathematical_audit, wasm = evidence.full_system_audit;
+  assert.equal(data.audit.mathTargets, math.exact_target_count);
+  assert.equal(data.audit.mathAudits, math.audited_total);
+  assert.equal(data.audit.wasmTargets, wasm.exact_targets.length);
+  assert.equal(data.audit.wasmAudits, wasm.audited_declarations);
+  assert.deepEqual(data.audit.assumptions, wasm.transitive_assumptions);
+  assert.equal(math.independent_kernel_check, 'passed');
+  assert.equal(wasm.independent_kernel_check, 'passed');
 });

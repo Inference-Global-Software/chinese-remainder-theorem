@@ -24,7 +24,7 @@ body {
   line-height:1.6;
 }
 
-button,input {
+button,input,select {
   font:inherit;
 }
 
@@ -45,7 +45,7 @@ a {
   color:inherit;
 }
 
-button:focus-visible,a:focus-visible,summary:focus-visible {
+button:focus-visible,a:focus-visible,summary:focus-visible,select:focus-visible,[role=tabpanel]:focus-visible {
   outline:3px solid #4c9d82;
   outline-offset:4px;
 }
@@ -100,6 +100,19 @@ input:focus-visible {
 .source-link span {
   margin-left:7px;
   font-size:18px;
+}
+
+.header-links {
+  display:flex;
+  align-items:center;
+  gap:22px;
+}
+
+.proof-jump {
+  color:var(--green);
+  font-size:12px;
+  text-underline-offset:4px;
+  white-space:nowrap;
 }
 
 main {
@@ -754,50 +767,160 @@ h2 {
   margin-top:4px;
 }
 
-.proof-note {
-  display:flex;
-  align-items:flex-start;
-  gap:15px;
-  margin:32px 0 35px;
-  padding:25px 0 0;
+.proof-explorer {
+  margin:36px 0;
+  padding:32px 0 0;
   border-top:1px solid var(--line);
-  max-width:100%;
+  scroll-margin-top:24px;
 }
 
-.proof-icon {
-  flex:0 0 28px;
-  height:30px;
-  background:#e7eee1;
-  border-radius:7px;
-  color:#608753;
-  text-align:center;
-  padding-top:4px;
+.proof-heading-row {
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  flex-wrap:wrap;
+  margin-bottom:22px;
 }
 
-.proof-note h2 {
+.proof-heading-row h2 {
+  font-size:18px;
+  margin:0 0 7px;
+}
+
+.proof-controls {
+  max-width:460px;
+}
+
+.proof-controls label {
+  display:block;
+  font-weight:600;
   font-size:12px;
-  letter-spacing:0;
-  margin:1px 0 7px;
+  margin-bottom:7px;
 }
 
-.proof-note p {
-  font-size:11px;
-  color:#7b8774;
-  line-height:1.9;
-  max-width:830px;
+.proof-controls select {
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:6px;
+  color:var(--ink);
+  background:var(--paper);
+}
+
+.proof-summary {
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:12px 20px;
+  margin:24px 0;
+  font-size:13px;
+}
+
+.proof-summary dt {
+  font-weight:600;
+}
+
+.proof-summary dd {
   margin:0;
+  overflow-wrap:anywhere;
 }
 
-.proof-note summary {
+.proof-tabs {
+  display:flex;
+  gap:6px;
+  border-bottom:1px solid var(--line);
+  padding-bottom:10px;
+  margin-bottom:20px;
+}
+
+.proof-tabs button {
+  background:transparent;
+  color:var(--muted);
+  border:0;
+  border-radius:6px;
+  padding:8px 14px;
+  font-size:13px;
+}
+
+.proof-tabs button[aria-selected=true] {
+  background:var(--ink);
+  color:var(--paper);
+}
+
+.proof-path,.proof-check {
+  font-size:12px;
+  color:var(--muted);
+  overflow-wrap:anywhere;
+}
+
+.proof-path {
+  margin:16px 0 8px;
+}
+
+.proof-code {
+  padding:18px 20px;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:#edf1e8;
+  font:12px/1.8 var(--mono);
+  white-space:pre-wrap;
+  overflow-wrap:anywhere;
+  margin:0 0 20px;
+}
+
+.proof-code code {
+  font:inherit;
+}
+
+.proof-explorer summary {
   cursor:pointer;
-  color:#4b7051;
-  font-size:11px;
-  margin-top:10px;
   width:fit-content;
+  color:var(--green);
 }
 
-.proof-note details p {
-  margin-top:12px;
+.proof-steps {
+  padding-left:22px;
+  max-width:900px;
+}
+
+.proof-steps li {
+  margin:9px 0;
+}
+
+.proof-scope {
+  padding:18px 0;
+  border-top:1px solid var(--line);
+}
+
+#proof-assumptions {
+  padding-left:22px;
+  font-size:12px;
+  overflow-wrap:anywhere;
+}
+
+#proof-load-status {
+  color:var(--muted);
+}
+
+@media(max-width:600px) {
+  .proof-summary {
+    grid-template-columns:minmax(0,1fr);
+    gap:4px;
+  }
+  .proof-summary dd {
+    margin-bottom:12px;
+  }
+  .proof-code {
+    padding:12px;
+    font-size:11px;
+  }
+  .proof-tabs button {
+    padding:8px 10px;
+    font-size:12px;
+  }
+  .header-links {
+    gap:12px;
+  }
 }
 
 .proof-links {
@@ -896,7 +1019,7 @@ footer span:last-child {
   main {
     padding:0 26px;
   }
-  .proof-note {
+  .proof-explorer {
     margin-top:26px;
   }
 }
@@ -1006,12 +1129,6 @@ footer span:last-child {
   }
   .result-bottom {
     flex-wrap:wrap;
-  }
-  .proof-note {
-    gap:11px;
-  }
-  .proof-note p {
-    font-size:10px;
   }
   footer {
     flex-direction:column;

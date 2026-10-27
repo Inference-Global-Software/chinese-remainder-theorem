@@ -9,6 +9,7 @@
   <link rel="icon" href="data:,">
   <link rel="stylesheet" href="/styles.css">
   <script type="module" src="/app.mjs"></script>
+  <script type="module" src="/proofs.mjs"></script>
 </head>
 <body>
   <header class="topbar">
@@ -16,7 +17,7 @@
       <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><path d="M3 3h11v11H3zm15 0h11v11H18zM3 18h11v11H3zm15 0h11v11H18z" fill="currentColor"/><path d="M21 21h5v5h-5z" fill="#f6f7f2"/></svg>
       <span>inference<span class="brand-slash"> / </span><span class="brand-project">playground</span></span>
     </a>
-    <a class="source-link" href="/source.inf" target="_blank" rel="noopener">View Inference source <span aria-hidden="true">↗</span></a>
+    <nav class="header-links" aria-label="Explore the demo"><a class="proof-jump" href="#proof-explorer">Explore proofs ↓</a><a class="source-link" href="/source.inf" target="_blank" rel="noopener">View Inference source <span aria-hidden="true">↗</span></a></nav>
   </header>
   <main>
     <section class="intro">
@@ -52,9 +53,54 @@
       </div>
     </section>
 
-    <section class="proof-note" aria-label="About the verification">
-      <div class="proof-icon" aria-hidden="true"><svg class="inline-icon" viewBox="0 0 16 16"><path d="m3 8 3 3 7-7"/></svg></div>
-      <div><h2>Small interface. Substantial guarantees.</h2><p>Proofs cover the canonical answer, its complete solution class, exact overflow detection, and independence from input order. This page checks that the loaded Wasm matches the recorded proof artifact.</p><details><summary>What is verified?</summary><p>The finite-system solver has compiled-Wasm execution proofs with explicit input-memory premises. Its mathematics covers arbitrary finite lists; this batch interface accepts up to 16 congruences. The web interface, JavaScript engine, and compiler translation are outside the proof boundary. The execution guarantee is a terminating nontrapping execution and correctness of every normal result.</p><p>For valid inputs, incompatibility takes priority over overflow. An overflowing period can still have a small solution. The canonical residue and repeat period must fit signed i64 to be returned; the set of mathematical solutions is unbounded.</p><div class="proof-links"><a href="/proofs.md" target="_blank" rel="noopener">Read the proof inventory ↗</a><a href="/evidence.json" target="_blank" rel="noopener">Verification evidence ↗</a></div></details></div>
+    <section class="proof-explorer" id="proof-explorer" aria-labelledby="proof-heading">
+      <div class="proof-heading-row">
+        <div><h2 id="proof-heading"><span class="step" aria-hidden="true">03</span> Proof explorer</h2><p class="panel-description">From the answer to the argument. Explore the guarantees behind this solver.</p></div>
+        <a class="proof-jump" href="#system-form">Back to the solver ↑</a>
+      </div>
+      <div class="proof-controls"><label for="proof-topic">Proved property</label>
+        <select id="proof-topic" disabled>
+          <option value="canonical">Canonical answer &amp; all solutions</option>
+          <option value="overflow">Overflow safety</option>
+          <option value="permutation">Order independence</option>
+          <option value="execution">Actual Wasm execution</option>
+        </select>
+      </div>
+      <p id="proof-load-status" role="status">Loading the proof excerpts…</p>
+      <div id="proof-content" hidden>
+        <dl class="proof-summary">
+          <dt>Guarantee</dt><dd id="proof-claim"></dd>
+          <dt>Conditions</dt><dd id="proof-conditions"></dd>
+          <dt id="proof-key-label">Key invariant</dt><dd id="proof-key"></dd>
+        </dl>
+        <div class="proof-tabs" role="tablist" aria-label="Proof material">
+          <button role="tab" id="proof-statement-tab" type="button" aria-selected="false" aria-controls="proof-statement-panel" tabindex="-1">Statement</button>
+          <button role="tab" id="proof-rocq-tab" type="button" aria-selected="true" aria-controls="proof-rocq-panel">Rocq proof</button>
+          <button role="tab" id="proof-inference-tab" type="button" aria-selected="false" aria-controls="proof-inference-panel" tabindex="-1">Inference code</button>
+        </div>
+        <section id="proof-statement-panel" role="tabpanel" tabindex="0" aria-labelledby="proof-statement-tab" hidden></section>
+        <section id="proof-rocq-panel" role="tabpanel" tabindex="0" aria-labelledby="proof-rocq-tab"></section>
+        <section id="proof-inference-panel" role="tabpanel" tabindex="0" aria-labelledby="proof-inference-tab" hidden></section>
+        <details class="proof-argument">
+          <summary>Read the argument step by step</summary>
+          <ol class="proof-steps" id="proof-steps"></ol>
+        </details>
+        <p class="proof-check">Exact excerpts from recorded kernel-checked sources. Rocq is not being rerun in the browser.</p>
+        <details class="proof-scope">
+          <summary>Verification scope and assumptions</summary>
+          <dl class="proof-summary">
+            <dt>Mathematics</dt><dd id="proof-math-audit"></dd>
+            <dt>Compiled solver</dt><dd id="proof-wasm-audit"></dd>
+            <dt>Runtime boundary</dt><dd>At most 16 congruences, signed i64 values, and two readable 128-byte arrays without pointer wrap. The mathematical finite-list theorems have no capacity limit.</dd>
+            <dt>Execution guarantee</dt><dd>A terminating, nontrapping normal execution exists; every normal result is correct. Universal termination of every reduction schedule is not claimed.</dd>
+            <dt>Overflow behavior</dt><dd>For valid inputs, incompatibility takes priority over overflow. The canonical residue and repeat period must fit signed i64 to be returned; the set of mathematical solutions is unbounded.</dd>
+            <dt>Outside the proof</dt><dd>The browser interface, JavaScript engine, and compiler translation. Generated admitted certificates are excluded from the trusted proof dependencies.</dd>
+            <dt>Evidence</dt><dd><a href="/evidence.json" target="_blank" rel="noopener">docs/evidence/finite-system.json ↗</a> · checked source snapshot <code>449214e</code>. This page checks that the loaded Wasm matches the recorded proof artifact.</dd>
+          </dl>
+          <details><summary>Allowlisted upstream assumptions</summary><ul id="proof-assumptions"></ul></details>
+        </details>
+      </div>
+      <div class="proof-links"><a href="/proofs.md" target="_blank" rel="noopener">Read the proof inventory ↗</a><a href="/evidence.json" target="_blank" rel="noopener">Verification evidence ↗</a></div>
     </section>
     <footer><span>INFERENCE <span class="footer-divider">/</span> VERIFIED COMPUTATION, EXPLORED.</span><span>Local demo · No data leaves your browser</span></footer>
   </main>

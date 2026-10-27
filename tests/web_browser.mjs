@@ -118,6 +118,52 @@ test('copy solution writes the exact current solution family', async (t) => {
   await page.getByRole('button', { name: 'Copied', exact: true }).waitFor();
   assert.equal(await page.evaluate(() => navigator.clipboard.readText()), 'x = 68 + 90k, for every integer k');
 });
+test('proof topics and keyboard tabs preserve a pending solver edit', async (t) => {
+  const page = await pageFor(t, { viewport: { width: 360, height: 800 } });
+  await page.getByLabel('Remainder 1', { exact: true }).fill('1');
+  const explorer = page.getByRole('region', { name: 'Proof explorer', exact: true });
+  await explorer.getByLabel('Proved property').selectOption('overflow');
+  assert.match(await explorer.getByRole('tabpanel').textContent(), /Theorem overflow_exact_proved/);
+  await explorer.getByRole('tab', { name: 'Statement', exact: true }).click();
+  assert.match(await explorer.getByRole('tabpanel').textContent(), /Definition T_overflow_exact/);
+  await explorer.getByRole('tab', { name: 'Statement', exact: true }).press('End');
+  assert.equal(await explorer.getByRole('tab', { name: 'Inference code', exact: true }).getAttribute('aria-selected'), 'true');
+  assert.match(await explorer.getByRole('tabpanel').textContent(), /pub fn crt_system_period/);
+  await explorer.getByRole('tab', { name: 'Inference code', exact: true }).press('ArrowLeft');
+  for (const [topic, theorem] of [
+    ['canonical', 'finite_canonical_proved'],
+    ['permutation', 'system_batch_permutation'],
+    ['execution', 'system_batch_solve_execution'],
+  ]) {
+    await explorer.getByLabel('Proved property').selectOption(topic);
+    assert.ok((await explorer.getByRole('tabpanel').textContent()).includes(theorem));
+    assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  }
+  await explorer.getByText('Read the argument step by step', { exact: true }).click();
+  assert.match(await explorer.locator('#proof-steps').textContent(), /system_batch_solve_exec_exists/);
+  await explorer.getByText('Verification scope and assumptions', { exact: true }).click();
+  await explorer.getByText('Allowlisted upstream assumptions', { exact: true }).click();
+  assert.equal(await explorer.locator('#proof-assumptions li').count(), 9);
+  assert.equal(await page.getByLabel('Remainder 1', { exact: true }).inputValue(), '1');
+  await status(page, 'dirty');
+  await page.getByRole('button', { name: 'Solve system', exact: true }).click();
+  await status(page, 'incompatible');
+  await mkdir('build/web-demo', { recursive: true });
+  await explorer.screenshot({ path: 'build/web-demo/proofs-mobile.png' });
+  await page.setViewportSize({ width: 1440, height: 1050 });
+  await explorer.getByLabel('Proved property').selectOption('canonical');
+  await explorer.screenshot({ path: 'build/web-demo/proofs-desktop.png' });
+});
+test('missing proof data has a visible error while the Wasm solver stays usable', async (t) => {
+  const page = await browser.newPage(); t.after(() => page.close());
+  await page.route('**/proof-data.json', (route) => route.fulfill({ status: 404, body: 'missing' }));
+  await page.goto(base);
+  await page.locator('#proof-load-status').filter({ hasText: /unable.*proof/i }).waitFor();
+  await status(page, 'solved');
+  await page.getByRole('button', { name: 'Classic', exact: true }).click();
+  assert.equal(await page.locator('#solution-value').textContent(), '23');
+  assert.equal(await page.getByLabel('Proved property').isDisabled(), true);
+});
 test('mobile full-width inputs and answers fit the viewport; desktop has no JS errors', async (t) => {
   const page = await pageFor(t, { viewport: { width: 390, height: 844 } });
   const errors = []; page.on('pageerror', (error) => errors.push(error.message));

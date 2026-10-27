@@ -1,0 +1,261 @@
+{
+  "topics": {
+    "canonical": {
+      "claim": "There is one canonical residue r in [0,p), with p equal to the LCM of the moduli. Every integer solution is exactly r + k·p, for an integer k.",
+      "conditions": "Mathematical theorem: positive moduli and pairwise compatibility. The executable additionally requires normalized residues and a period that fits i64.",
+      "keyLabel": "Fold invariant",
+      "key": "After processing a prefix, (r,p) represents all its solutions and p ≤ MAX. The exact predicate is fold_inv in the Statement tab.",
+      "statement": [
+        {
+          "label": "Complete representation",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 134,
+          "end": 135,
+          "text": "Definition Rep (C : list constraint) (r p : Z) : Prop :=\n  p = L C /\\ 0 <= r < p /\\ forall x, Sol C x <-> congruent p x r.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        },
+        {
+          "label": "Rocq statement",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 195,
+          "end": 196,
+          "text": "Definition T_finite_canonical : Prop := forall C, positive C -> Pairwise C ->\n  exists r, Rep C r (L C) /\\ forall s, Rep C s (L C) -> s=r.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        },
+        {
+          "label": "Rocq statement",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 197,
+          "end": 198,
+          "text": "Definition T_finite_all_solutions : Prop := forall C r p, Rep C r p ->\n  forall x, Sol C x <-> exists k, x=r+k*p.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        },
+        {
+          "label": "Exact mathematical loop invariant",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 229,
+          "end": 229,
+          "text": "Definition fold_inv (done : list constraint) (r p : Z) : Prop := Rep done r p /\\ p <= MAX.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        }
+      ],
+      "proof": [
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/CRTFinite.v",
+          "start": 185,
+          "end": 190,
+          "text": "Theorem finite_canonical_proved : T_finite_canonical.\nProof.\n  intros C HC Hpair. destruct (proj2 (finite_existence_proved C HC) Hpair) as [x Hx].\n  exists (x mod L C). pose proof (representation_from_solution C x HC Hx) as Hrep.\n  split; [assumption|]. intros s Hs. exact (proj1 (Rep_unique _ _ _ _ _ Hs Hrep)).\nQed.",
+          "sha256": "1e17a2e75f4132a0ea13ff0abf1db433918036e96f96e51a5d26fb0048021e91"
+        },
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/CRTFinite.v",
+          "start": 191,
+          "end": 195,
+          "text": "Theorem finite_all_solutions_proved : T_finite_all_solutions.\nProof.\n  intros C r p (_ & _ & Hrep) x. rewrite Hrep. unfold congruent.\n  split; intros [k Hk]; exists k; lia.\nQed.",
+          "sha256": "1e17a2e75f4132a0ea13ff0abf1db433918036e96f96e51a5d26fb0048021e91"
+        }
+      ],
+      "inference": [
+        {
+          "label": "Inference implementation",
+          "path": "systems/src/main.inf",
+          "start": 116,
+          "end": 131,
+          "text": "pub fn crt_system_solve(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {\n    if count < 0 || count > 16 { return -2; }\n    let status: i64 = system_classify(residues, moduli, count);\n    if status != 0 { return status; }\n    let mut r: i64 = 0;\n    let mut L: i64 = 1;\n    let mut i: i32 = 0;\n    loop i < count {\n        let next_r: i64 = crt_merge_solve(r, L, residues[i], moduli[i]);\n        if next_r < 0 { r = next_r; break; }\n        L = crt_merge_period(r, L, residues[i], moduli[i]);\n        r = next_r;\n        i = i + 1;\n    }\n    return r;\n}",
+          "sha256": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45"
+        }
+      ],
+      "steps": [
+        "Pairwise compatibility supplies an integer solution (finite_existence_proved).",
+        "Reduce that solution modulo the LCM to obtain the canonical representative. Rep_unique establishes uniqueness in the canonical interval.",
+        "Rep already characterizes the whole solution set. Unfolding congruence and integer arithmetic yields x = r + k·p.",
+        "The fold starts at the empty summary (0,1). Each successful merge preserves the prefix representation; the operational batch proofs connect these steps to the emitted Wasm."
+      ]
+    },
+    "overflow": {
+      "claim": "Overflow occurs exactly for a valid, compatible system whose mathematical LCM exceeds MAX = 9223372036854775807.",
+      "conditions": "Invalid inputs and incompatibility are classified before the fold. The multiplication guard assumes positive moduli bounded by MAX.",
+      "keyLabel": "Safe guard",
+      "key": "factor = L / gcd(L,m). If factor > MAX / m, report overflow before multiplying. Otherwise factor·m is representable.",
+      "statement": [
+        {
+          "label": "Exact guard equivalence and product safety",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 112,
+          "end": 114,
+          "text": "Definition T_lcm_guard : Prop := forall m n, moduli m n ->\n  ((m / Z.gcd m n > MAX / n) <-> MAX < Z.lcm m n) /\\\n  (m / Z.gcd m n <= MAX / n -> word ((m / Z.gcd m n)*n)).",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        },
+        {
+          "label": "Exact finite-system overflow classification",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 234,
+          "end": 235,
+          "text": "Definition T_overflow_exact : Prop := forall C,\n  system_model C = Overflow <-> valid C /\\ Pairwise C /\\ MAX < L C.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        }
+      ],
+      "proof": [
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/CRTSystemArithmetic.v",
+          "start": 428,
+          "end": 439,
+          "text": "Theorem lcm_guard_proved : T_lcm_guard.\nProof.\n  intros m n Hdom. destruct Hdom as (Hm & Hn).\n  destruct (reduction_proved m n ltac:(lia) ltac:(lia)) as\n    (Hg & Hgm & Hgn & Hm1 & Hn1 & Hcop & Hl & Hp).\n  rewrite <- Hl. unfold period. split.\n  - pose proof (Z.div_mod MAX n ltac:(lia)).\n    pose proof (Z.mod_pos_bound MAX n ltac:(lia)). split; nia.\n  - intros Hguard. apply nonnegative_word. split; [nia|].\n    pose proof (Z.div_mod MAX n ltac:(lia)).\n    pose proof (Z.mod_pos_bound MAX n ltac:(lia)). nia.\nQed.",
+          "sha256": "7e8518d8c9a1675dd2cfcf05a64a6bafa4742ae1e11217e666e9905e7e45b455"
+        },
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/CRTFinite.v",
+          "start": 623,
+          "end": 628,
+          "text": "Theorem overflow_exact_proved : T_overflow_exact.\nProof.\n  intros C. split.\n  - intros H. pose proof (finite_model_proved C). rewrite H in H0. exact H0.\n  - intros H. apply result_post_unique with (C:=C); [apply finite_model_proved|exact H].\nQed.",
+          "sha256": "1e17a2e75f4132a0ea13ff0abf1db433918036e96f96e51a5d26fb0048021e91"
+        }
+      ],
+      "inference": [
+        {
+          "label": "Inference implementation",
+          "path": "systems/src/main.inf",
+          "start": 133,
+          "end": 147,
+          "text": "pub fn crt_system_period(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {\n    if count < 0 || count > 16 { return -2; }\n    let status: i64 = system_classify(residues, moduli, count);\n    if status != 0 { return status; }\n    let mut L: i64 = 1;\n    let mut i: i32 = 0;\n    loop i < count {\n        let g: i64 = gcd_positive(L, moduli[i]);\n        let factor: i64 = L / g;\n        if factor > 9223372036854775807 / moduli[i] { L = -3; break; }\n        L = factor * moduli[i];\n        i = i + 1;\n    }\n    return L;\n}",
+          "sha256": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45"
+        }
+      ],
+      "steps": [
+        "Use the GCD/LCM identity to express the next period as (L / gcd(L,m))·m.",
+        "Euclidean division of MAX by positive m proves that comparing against MAX / m is equivalent to checking the product, without forming an overflowing product.",
+        "finite_model_proved establishes the complete result classification. The forward direction extracts the overflow conditions; uniqueness of result_post proves the reverse.",
+        "Pairwise compatibility is checked first, so a contradiction is not hidden by an overflowing prefix."
+      ]
+    },
+    "permutation": {
+      "claim": "Reordering the congruences preserves the entire result, including invalidity, incompatibility, overflow, canonical residue, and period.",
+      "conditions": "The two lists are permutations. For the Wasm theorem, both invocations use the same signed i32 count and satisfy the input-memory premises.",
+      "keyLabel": "Key proof fact",
+      "key": "A permutation preserves validity, the solution set, and the LCM. result_post uniquely determines the result.",
+      "statement": [
+        {
+          "label": "Rocq statement",
+          "path": "specifications/CRTSystemStatements.v",
+          "start": 211,
+          "end": 212,
+          "text": "Definition T_permutation : Prop := forall A B,\n  Permutation A B -> system_model A = system_model B.",
+          "sha256": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe"
+        }
+      ],
+      "proof": [
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/CRTFinite.v",
+          "start": 516,
+          "end": 521,
+          "text": "Theorem permutation_proved : T_permutation.\nProof.\n  intros A B HP. apply result_post_unique with (C:=B).\n  - eapply result_post_permutation; [exact HP|apply finite_model_proved].\n  - apply finite_model_proved.\nQed.",
+          "sha256": "1e17a2e75f4132a0ea13ff0abf1db433918036e96f96e51a5d26fb0048021e91"
+        },
+        {
+          "label": "Transfer to actual Wasm execution",
+          "path": "proofs/systems/BatchExecutionTargets.v",
+          "start": 82,
+          "end": 88,
+          "text": "Theorem system_batch_permutation memA memB hsA hsB ptrRA ptrMA ptrRB ptrMB c rsA msA rsB msB rA pA rB pB :\n system_input_memory memA ptrRA ptrMA rsA msA -> batch_word32 c -> system_input_memory memB ptrRB ptrMB rsB msB -> batch_word32 c ->\n Permutation (be_active c rsA msA) (be_active c rsB msB) ->\n system_run memA hsA 8%num (be_args ptrRA ptrMA c) rA -> system_run memA hsA 9%num (be_args ptrRA ptrMA c) pA ->\n system_run memB hsB 8%num (be_args ptrRB ptrMB c) rB -> system_run memB hsB 9%num (be_args ptrRB ptrMB c) pB ->\n rA=rB /\\ pA=pB.\nProof. move=> HA WA HB WB. exact: (be_execution_permutation (system_batch_refines hsA HA WA) (system_batch_refines hsB HB WB)). Qed.",
+          "sha256": "af626911dfbd848667f1247955e776cd6c87da758d961749babc2f47de04c33e"
+        }
+      ],
+      "inference": [
+        {
+          "label": "Inference implementation",
+          "path": "systems/src/main.inf",
+          "start": 93,
+          "end": 114,
+          "text": "fn system_classify(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {\n    if count < 0 || count > 16 { return -2; }\n    let mut status: i64 = 0;\n    let mut i: i32 = 0;\n    loop i < count {\n        if moduli[i] < 1 || residues[i] < 0 || residues[i] >= moduli[i] { status = -2; break; }\n        i = i + 1;\n    }\n    if status != 0 { return status; }\n    i = 0;\n    loop i < count {\n        let mut j: i32 = i + 1;\n        loop j < count {\n            let g: i64 = gcd_positive(moduli[i], moduli[j]);\n            if (residues[j] - residues[i]) % g != 0 { status = -1; break; }\n            j = j + 1;\n        }\n        if status != 0 { break; }\n        i = i + 1;\n    }\n    return status;\n}",
+          "sha256": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45"
+        }
+      ],
+      "steps": [
+        "finite_model_proved gives a result satisfying result_post for each list.",
+        "Transfer the first result to the permuted list using result_post_permutation.",
+        "result_post_unique forces the two model results to agree.",
+        "system_batch_refines connects actual Wasm invocations to that model; system_batch_permutation concludes equality of both returned fields."
+      ]
+    },
+    "execution": {
+      "claim": "The actual batch Wasm export has a terminating, nontrapping normal execution, and every normal result agrees with the proved finite-system model.",
+      "conditions": "A signed i32 count and correctly represented arrays in prepared memory. Counts outside 0…16 return invalid; the finite-list result_post is stated for counts in 0…16.",
+      "keyLabel": "Memory premise",
+      "key": "Two complete readable 128-byte array regions, with no 32-bit pointer wrap. Index bounds, calls, arithmetic guards, and loops are included in the proof.",
+      "statement": [
+        {
+          "label": "Public execution theorem statement",
+          "path": "proofs/systems/BatchExecutionTargets.v",
+          "start": 59,
+          "end": 62,
+          "text": "Theorem system_batch_solve_execution mem hs rb mb c rs ms :\n system_input_memory mem rb mb rs ms -> batch_word32 c ->\n total_correct (system_run mem hs 8%num (be_args rb mb c))\n (fun r => r=solve_value (be_batch_result c rs ms) /\\ (0<=c<=16 -> result_post (be_active c rs ms) (be_batch_result c rs ms))).",
+          "sha256": "af626911dfbd848667f1247955e776cd6c87da758d961749babc2f47de04c33e"
+        },
+        {
+          "label": "Array representation",
+          "path": "proofs/systems/SystemMemory.v",
+          "start": 25,
+          "end": 27,
+          "text": "Definition array_region (m : meminst) (base : N) (xs : seq i64) : Prop :=\n  size xs = 16%nat /\\ (base + 128 <= operations.mem_length m)%num /\\\n  (base + 128 <= 4294967296)%num /\\ array_cells m base xs.",
+          "sha256": "40dd544184e7311e4fb9f7cec9fabbb8921552a1ef5165937c0d82f3e242e53e"
+        },
+        {
+          "label": "Public memory premise",
+          "path": "proofs/systems/SystemMemory.v",
+          "start": 29,
+          "end": 31,
+          "text": "Definition system_input_memory m residues_ptr moduli_ptr residues moduli : Prop :=\n  system_memory_valid m /\\ array_region m residues_ptr residues /\\\n  array_region m moduli_ptr moduli.",
+          "sha256": "40dd544184e7311e4fb9f7cec9fabbb8921552a1ef5165937c0d82f3e242e53e"
+        }
+      ],
+      "proof": [
+        {
+          "label": "Rocq theorem and proof",
+          "path": "proofs/systems/BatchExecutionTargets.v",
+          "start": 59,
+          "end": 66,
+          "text": "Theorem system_batch_solve_execution mem hs rb mb c rs ms :\n system_input_memory mem rb mb rs ms -> batch_word32 c ->\n total_correct (system_run mem hs 8%num (be_args rb mb c))\n (fun r => r=solve_value (be_batch_result c rs ms) /\\ (0<=c<=16 -> result_post (be_active c rs ms) (be_batch_result c rs ms))).\nProof.\n move=> Hmem Wc. apply: (system_run_total_correct (result:=solve_value (be_batch_result c rs ms))); first exact: (system_batch_solve_exec_exists hs Hmem Wc).\n split; first reflexivity. exact: batch_result_post.\nQed.",
+          "sha256": "af626911dfbd848667f1247955e776cd6c87da758d961749babc2f47de04c33e"
+        }
+      ],
+      "inference": [
+        {
+          "label": "Inference implementation",
+          "path": "systems/src/main.inf",
+          "start": 116,
+          "end": 131,
+          "text": "pub fn crt_system_solve(residues: [i64; 16], moduli: [i64; 16], count: i32) -> i64 {\n    if count < 0 || count > 16 { return -2; }\n    let status: i64 = system_classify(residues, moduli, count);\n    if status != 0 { return status; }\n    let mut r: i64 = 0;\n    let mut L: i64 = 1;\n    let mut i: i32 = 0;\n    loop i < count {\n        let next_r: i64 = crt_merge_solve(r, L, residues[i], moduli[i]);\n        if next_r < 0 { r = next_r; break; }\n        L = crt_merge_period(r, L, residues[i], moduli[i]);\n        r = next_r;\n        i = i + 1;\n    }\n    return r;\n}",
+          "sha256": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45"
+        }
+      ],
+      "steps": [
+        "system_batch_solve_exec_exists constructs a normal execution of the actual generated function.",
+        "system_run_total_correct combines this witness with uniqueness of normal results for the read-only Wasm subset.",
+        "batch_result_post supplies the mathematical meaning of the returned classification.",
+        "This is not a claim that every possible operational reduction schedule terminates. The browser displays the recorded proof; it does not run Rocq."
+      ]
+    }
+  },
+  "audit": {
+    "mathTargets": 60,
+    "mathAudits": 194,
+    "wasmTargets": 21,
+    "wasmAudits": 1336,
+    "assumptions": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Classical_Prop.classic",
+      "FunctionalExtensionality.functional_extensionality_dep",
+      "simd_execute.SIMD_ops.app_vbinop_str",
+      "simd_execute.SIMD_ops.app_vshiftop_str",
+      "simd_execute.SIMD_ops.app_vternop_str",
+      "simd_execute.SIMD_ops.app_vtestop_str",
+      "simd_execute.SIMD_ops.app_vunop_str"
+    ]
+  }
+}

@@ -5,6 +5,13 @@ remove up to 16 congruences, solve, reverse their order, or explore the examples
 Results show the canonical residue, period, complete solution family, exact sample
 solutions, and remainder checks. Editing inputs clears the previous answer.
 
+The proof explorer below the solver presents four properties: the canonical
+answer and all solutions, overflow safety, order independence, and actual Wasm
+execution. Select a property and switch between its statement, exact Rocq proof,
+and Inference code. Expand the guided argument or the verification scope to see
+the reasoning, recorded checks, and assumptions. Proof browsing preserves the
+solver inputs and result; the tabs support arrow keys, Home, and End.
+
 ## Launch
 
 Use Node 20+ and a modern browser with WebAssembly, BigInt, and Web Crypto.
@@ -50,6 +57,14 @@ The recorded proof evidence includes hashes of documentation from its original
 snapshot. The new demo and README launch link are subsequent documentation/UI
 changes; they do not change the certified Inference source or Wasm bytes.
 
+[`proof-data.json`](proof-data.json) contains curated excerpts with source paths,
+line ranges, and source SHA256 hashes. The HTTP integration tests compare every
+excerpt against its repository source and the evidence record's `bound_inputs`,
+and compare the displayed audit counts and assumptions against that record.
+Update excerpts and their provenance together when the checked sources change.
+The explorer displays recorded proof results; it does not run Rocq in the browser.
+A proof-data loading failure is reported independently of solver availability.
+
 ## Check the demo
 
 With the compiled artifact available, run the dependency-free real-Wasm and HTTP
@@ -71,7 +86,8 @@ If `playwright-core` resolves normally from Node and its browser is installed,
 those environment overrides can be omitted. Screenshots are saved under the
 ignored `build/web-demo/` directory. The tests cover presets, invalidation after
 editing, full-width values, capacity controls, clipboard output, artifact failure,
-and mobile layout. Existing regression tests remain:
+and mobile layout, plus proof selection, keyboard tabs, solver-state preservation,
+source provenance, and proof-loading failure. Existing regression tests remain:
 
 ```sh
 python3 -m unittest discover -s tests -v
