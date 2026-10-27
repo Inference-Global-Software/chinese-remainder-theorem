@@ -5,16 +5,20 @@ Run through opam exec in the pinned project container. All handwritten sources
 and the minimal unchanged legacy context dependency closure are staged afresh.
 """
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import re
-import shutil
 import subprocess
 
 from check_proofs import FORBIDDEN, pinned_container_error, uncomment
-from check_wasm_proofs import audit_assumptions, sha256
+import check_proofs
+import check_wasm_proofs
+from check_wasm_proofs import audit_assumptions
 
 ROOT = Path(__file__).resolve().parents[1]
+CHECKER_INPUTS = (Path(__file__).resolve(), Path(check_proofs.__file__).resolve(),
+                  Path(check_wasm_proofs.__file__).resolve())
 MODULES = ['ReadOnly', 'ReadOnlyDeterminism', 'ReadOnlyFlatJoin',
            'ReadOnlyConfluence', 'SystemRuntime', 'SystemMemory',
            'SystemArrayExecution']
@@ -28,7 +32,47 @@ DECLARATION = re.compile(r'^\s*(?:Theorem|Lemma|Definition|Fixpoint|Corollary|Pr
 IMPORT = re.compile(r'From CRTWasm Require Import ([\s\w]+)\.')
 
 
-def legacy_modules(sources):
+class InputSnapshot:
+    """One byte snapshot drives discovery, auditing, staging, and evidence."""
+    def __init__(self):
+        self.inputs = {}
+        self.staged = {}
+
+    def read(self, path):
+        if path not in self.inputs:
+            self.inputs[path] = path.read_bytes()
+        return self.inputs[path]
+
+    def text(self, path):
+        return self.read(path).decode()
+
+    def digest(self, path):
+        return hashlib.sha256(self.read(path)).hexdigest()
+
+    def write_staged(self, path, data):
+        path.write_bytes(data)
+        self.staged[path] = data
+
+    def stage(self, source, destination):
+        self.write_staged(destination, self.read(source))
+
+    def verify_unchanged(self):
+        # Check originals and staged bytes. A missing file also invalidates the run.
+        for kind, files in [('Input', self.inputs), ('Staged source', self.staged)]:
+            for path, data in files.items():
+                try:
+                    unchanged = path.read_bytes() == data
+                except OSError:
+                    unchanged = False
+                if not unchanged:
+                    raise RuntimeError(f'{kind} changed during infrastructure check: {path}')
+
+    def input_hashes(self):
+        return {str(path.relative_to(ROOT)): hashlib.sha256(data).hexdigest()
+                for path, data in self.inputs.items()}
+
+
+def legacy_modules(sources, snapshot):
     ordered = []
     visiting = set()
 
@@ -39,14 +83,14 @@ def legacy_modules(sources):
             raise ValueError('Cyclic legacy imports: ' + name)
         visiting.add(name)
         source = ROOT / 'proofs/wasm' / (name + '.v')
-        for block in IMPORT.findall(uncomment(source.read_text())):
+        for block in IMPORT.findall(uncomment(snapshot.text(source))):
             for dependency in block.split():
                 visit(dependency)
         visiting.remove(name)
         ordered.append(name)
 
     for source in sources:
-        for block in IMPORT.findall(uncomment(source.read_text())):
+        for block in IMPORT.findall(uncomment(snapshot.text(source))):
             for name in block.split():
                 visit(name)
     return ordered
@@ -56,26 +100,31 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--out', type=Path, default=ROOT / 'build/system-infrastructure')
     args = parser.parse_args()
-    error = pinned_container_error()
-    if error:
-        parser.error(error)
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=True)
     report = out / 'report.json'
     report.unlink(missing_ok=True)
+    error = pinned_container_error()
+    if error:
+        parser.error(error)
+    snapshot = InputSnapshot()
+    for checker in CHECKER_INPUTS:
+        snapshot.read(checker)
+    allowfile = ROOT / 'proofs/wasm/assumptions.allow'
+    allowed = set(snapshot.text(allowfile).splitlines())
     artifacts = ROOT / 'systems/out'
-    manifest = json.loads((artifacts / 'manifest.json').read_text())
+    manifest = json.loads(snapshot.text(artifacts / 'manifest.json'))
     for key, source in [('source', ROOT / 'systems/src/main.inf'),
                         ('project', ROOT / 'systems/Inference.toml')]:
-        if manifest[key]['sha256'] != sha256(source):
+        if manifest[key]['sha256'] != snapshot.digest(source):
             parser.error('Stale system ' + key + ': rebuild in proof mode')
     if manifest['mode'] != 'proof':
         parser.error('System artifacts must be built in proof mode')
     for name in ('main.v', 'main.wasm'):
-        if manifest['artifacts'][name] != sha256(artifacts / name):
+        if manifest['artifacts'][name] != snapshot.digest(artifacts / name):
             parser.error('Stale or modified system artifact: ' + name)
     system_sources = [ROOT / 'proofs/systems' / (name + '.v') for name in MODULES]
-    legacy = legacy_modules(system_sources)
+    legacy = legacy_modules(system_sources, snapshot)
     legacy_sources = [ROOT / 'proofs/wasm' / (name + '.v') for name in legacy]
     generated, old, current = (out / name for name in ('generated', 'legacy', 'systems'))
     for directory in (generated, old, current):
@@ -88,26 +137,26 @@ def main():
     for namespace, sources, target in [('CRTWasm', legacy_sources, old),
                                         ('CRTSystems', system_sources, current)]:
         for source in sources:
-            code = uncomment(source.read_text())
+            code = uncomment(snapshot.text(source))
             if FORBIDDEN.search(code):
                 parser.error('Proof-hole audit failed: ' + str(source))
             names = DECLARATION.findall(code)
             if not names:
                 parser.error('No audited declarations: ' + str(source))
             declarations.extend(f'{namespace}.{source.stem}.{name}' for name in names)
-            hashes[str(source.relative_to(ROOT))] = sha256(source)
-            shutil.copyfile(source, target / source.name)
+            hashes[str(source.relative_to(ROOT))] = snapshot.digest(source)
+            snapshot.stage(source, target / source.name)
     target_source = ROOT / 'proofs/systems/InfrastructureTargets.v'
-    target_code = uncomment(target_source.read_text())
+    target_code = uncomment(snapshot.text(target_source))
     if FORBIDDEN.search(target_code):
         parser.error('Proof-hole audit failed: InfrastructureTargets.v')
     wrappers = DECLARATION.findall(target_code)
     if set(wrappers) != EXACT_TARGETS or len(wrappers) != len(EXACT_TARGETS):
         parser.error('Missing exact infrastructure target wrapper')
-    hashes[str(target_source.relative_to(ROOT))] = sha256(target_source)
-    shutil.copyfile(target_source, current / target_source.name)
+    hashes[str(target_source.relative_to(ROOT))] = snapshot.digest(target_source)
+    snapshot.stage(target_source, current / target_source.name)
     declarations.extend('CRTSystems.InfrastructureTargets.' + name for name in wrappers)
-    shutil.copyfile(artifacts / 'main.v', generated / 'main.v')
+    snapshot.stage(artifacts / 'main.v', generated / 'main.v')
     verifier = Path('/workspaces/wasm-verifier')
     flags = ['-w', '-notation-overridden', '-R', str(verifier / '_build/default/theories'),
              'WasmVerifier', '-Q', str(generated), 'CRTSystemGenerated',
@@ -129,12 +178,10 @@ def main():
     audit += '\n'.join('Require Import CRTSystems.' + name + '.'
                        for name in [*MODULES, 'InfrastructureTargets']) + '\n'
     audit += '\n'.join('Print Assumptions ' + name + '.' for name in declarations) + '\n'
-    (out / 'Audit.v').write_text(audit)
+    snapshot.write_staged(out / 'Audit.v', audit.encode())
     output = run(['coqc', *flags, 'Audit.v'], 'Audit.log')
-    allowfile = ROOT / 'proofs/wasm/assumptions.allow'
-    allowed = set(allowfile.read_text().splitlines())
     assumptions = audit_assumptions(output, len(declarations), allowed)
-    (out / 'RejectedCertificate.v').write_text('''From Wasm Require Import host.
+    snapshot.write_staged(out / 'RejectedCertificate.v', b'''From Wasm Require Import host.
 From WasmVerifier Require Import Verifier.
 From CRTSystemGenerated Require main.
 Section Host.
@@ -156,6 +203,7 @@ Print Assumptions false_certificate.
         raise RuntimeError('Audit accepted generated admitted certificate')
     run(['coqchk', '-silent', *flags[2:], *['CRTSystems.' + name for name in
          [*MODULES, 'InfrastructureTargets']]], 'coqchk.log')
+    snapshot.verify_unchanged()
     report.write_text(json.dumps({
         'status': 'operational_infrastructure_checked',
         'public_crt_execution_correctness_certified': False,
@@ -165,8 +213,14 @@ Print Assumptions false_certificate.
         'independent_kernel_check': 'passed',
         'generated_admission_negative_control': 'rejected',
         'proof_sources': hashes, 'build_manifest': manifest,
-        'assumptions_allowlist_sha256': sha256(allowfile),
-        'checker_sha256': sha256(Path(__file__)),
+        'assumptions_allowlist_sha256': snapshot.digest(allowfile),
+        'checker_sha256': snapshot.digest(CHECKER_INPUTS[0]),
+        'checker_dependencies': {str(path.relative_to(ROOT)): snapshot.digest(path)
+                                 for path in CHECKER_INPUTS},
+        'bound_inputs': snapshot.input_hashes(),
+        'staged_sources': {str(path.relative_to(out)): hashlib.sha256(data).hexdigest()
+                           for path, data in snapshot.staged.items()},
+        'input_and_staged_drift_check': 'passed',
     }, indent=2) + '\n')
     print(f'Checked {len(declarations)} declarations and {len(wrappers)} exact infrastructure targets.\n{report}')
 
