@@ -50,5 +50,5 @@ root}) returns the HTTP server; a CLI wrapper defaults to4173.
 - [x] Document launch/build/test commands. Run Node/browser checks, inspect desktop
   and mobile screenshots, run the existing host regression suite once, and confirm
   all proof-bound source hashes are unchanged.
-- [ ] Commit completed feature; obtain one fresh final review, resolve substantive
+- [x] Commit completed feature; obtain one fresh final review, resolve substantive
   findings, and leave local server/preview open for the user.
