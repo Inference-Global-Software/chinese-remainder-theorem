@@ -15,6 +15,26 @@ targets are also proved: calls have terminating executions, and every normally
 returned result satisfies its contract. See [proof coverage and trust
 boundary](proofs/README.md).
 
+## Finite systems and full-width merging
+
+The separate [`systems/` project](systems/README.md) extends the example to up to
+16 congruences and the full positive signed-i64 modulus range. Its finite-list
+mathematics is unbounded. Both batch exports and the reusable scalar merge
+exports have direct proofs of their actual emitted Wasm execution, including
+invalid-before-incompatible-before-overflow precedence. Actual execution results
+are independent of permutation, and successful block summaries compose.
+
+```sh
+cd systems
+infs build
+cd ..
+node systems/scripts/demo.mjs --json 2 6 5 9 8 15
+```
+
+This returns solution **68** and period **90**. The empty system returns `(0,1)`.
+See [the API, memory boundary, error codes and proof command](systems/README.md).
+The root project below retains its original pair API and certificates.
+
 ## Run it
 
 Requirements: the `infs` Inference toolchain, Node with WebAssembly/BigInt
@@ -102,7 +122,7 @@ The implementation accepts moduli from `1` through `2^31 - 1`, normalized
 nonnegative remainders, and uses `i64` arithmetic. `crt_solve(a,m,b,n)` returns
 `-2` for invalid input, `-1` for valid incompatible input, and otherwise the
 canonical solution. `crt_period(m,n)` returns `-2` for invalid moduli and otherwise
-their lcm. These are the only two exported functions. Internal helpers have
+their lcm. These are the root project’s two exported functions. Internal helpers have
 explicit preconditions. The mathematical CRT theorem covers unbounded integers.
 
 ## Verification approach

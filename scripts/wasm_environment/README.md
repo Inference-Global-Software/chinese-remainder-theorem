@@ -107,3 +107,8 @@ docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
 This includes exact generated contract checks, transitive assumption auditing,
 a negative control that rejects the generated admitted certificate, and an
 independent `coqchk` run. Results are written to `build/wasm-proofs/report.json`.
+
+See the [proof inventory](../../proofs/README.md),
+[finite-system proof instructions](../../proofs/systems/README.md), and
+[reference provenance](../../references/README.md) for the project-level claims
+and sources checked in this environment.

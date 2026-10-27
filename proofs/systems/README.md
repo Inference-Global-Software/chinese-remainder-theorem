@@ -1,8 +1,8 @@
-# Finite-system scalar correctness and operational infrastructure
+# Finite-system compiled execution proofs
 
-This directory provides operational infrastructure and scalar execution proofs
-for the separate `systems/` project. The scalar gate certifies `crt_merge_solve`
-and `crt_merge_period`; batch execution correctness remains a separate task.
+This directory proves the scalar and bounded batch exports of the separate
+`systems/` project. The full gate certifies actual execution of both merge exports
+and both batch exports, together with their operational dependencies.
 
 - `ReadOnly` defines a recursive allowed instruction predicate and native-function
   store invariant. Every real reduction, including a native call or scalar load,
@@ -29,8 +29,8 @@ and `crt_merge_period`; batch execution correctness remains a separate task.
   every normal execution returns that element.
 
 The existence/uniqueness results make no claim that every possible reduction
-schedule terminates. Later scalar/batch correctness targets must supply the
-mathematical preconditions and explicit input-memory premises.
+schedule terminates. The closed scalar and batch targets supply the mathematical preconditions
+and explicit input-memory premises.
 
 ## Reproduce
 
@@ -44,7 +44,7 @@ Run all Rocq work inside the existing pinned verifier container (with this
 checkout mounted at `/workspaces/crt`):
 
 ```sh
-sg docker -c 'docker exec -u coq -w /workspaces/crt crt-finite-system-verifier opam exec -- python3 scripts/check_system_infrastructure.py'
+sg docker -c 'docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real opam exec -- python3 scripts/check_system_infrastructure.py'
 ```
 
 The checker stages fresh copies of these sources, the exact generated module,
@@ -89,7 +89,7 @@ runtime. Prepared memory is never presented as an independently instantiated
 Run the scalar proof gate in the pinned container:
 
 ```sh
-sg docker -c 'docker exec -u coq -w /workspaces/crt crt-finite-system-verifier opam exec -- python3 scripts/check_system_scalars.py'
+sg docker -c 'docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real opam exec -- python3 scripts/check_system_scalars.py'
 ```
 
 The gate rebuilds the mathematical, unchanged legacy, generated, and new scalar
@@ -101,3 +101,55 @@ projects, verifier environment pins, checker dependencies, and staged bytes,
 and rejects input or staging drift before writing success. The report does not
 claim batch execution correctness. Host-safe failure controls live in
 `tests/test_system_scalar_gate.py`; they mock every compiler subprocess.
+
+## Complete batch execution and algebra
+
+`ArrayAccess`, `BatchArithmetic`, `BatchCount`, `BatchValidation`, and `BatchPair`
+prove the emitted per-access, checked increment, count, validity and pair tests.
+`BatchValidateLoop`, `BatchPairRow`, and `BatchPairLoop` prove the exact finite
+validation and lexicographic pair scans. `BatchClassModel` identifies their
+cursor recurrences with the unbounded finite-list model; `BatchClassExecution`
+closes the complete classifier body and native call for every signed-i32 count.
+`BatchPeriodFold` and `BatchSolveFold` prove the emitted accumulation loops.
+`BatchPublicPrefix`, `BatchPeriodExecution`, and `BatchSolveExecution` connect
+classification and accumulation to both exact public function bodies.
+
+`BatchExecutionTargets` supplies seven closed final targets:
+
+- `batch_export_bindings`: exact public module and instantiated export names/indices.
+- `system_batch_solve_execution` and `system_batch_period_execution`: normal
+  execution exists and every normal result equals the precisely classified model.
+- `system_batch_permutation`: both actual returned fields agree for permuted
+  active input, including all error classifications.
+- `system_batch_success_summary`: actual successful outputs represent the whole
+  active system, with valid count and representable period.
+- `system_batch_composition`: actual scalar merge executions of two successful
+  batch summaries have the complete concatenated-system result and postcondition.
+- `system_batch_concat`: those actual scalar results agree with a direct batch
+  invocation of a permutation of the concatenation, subject to count 0..16.
+
+The algebra helper `be_refines` is discharged by the compiled execution targets;
+it is not a premise of these closed algebra targets. Incompatible and overflowing
+unions of successful blocks remain covered. Bare error codes cannot be composed
+as summaries. Finite-model singleton/duplicate laws and successful associativity
+and commutativity transfer through these execution refinements; they are not
+additional separately named closed batch targets. Inactive-tail independence
+follows because the model uses exactly the active prefix. Empty output is `(0,1)`.
+
+Public batch targets quantify arbitrary signed counts and i64 array contents,
+with `system_input_memory` and `batch_word32` premises. For count outside 0..16
+the result is invalid regardless of contents; the finite-list `result_post` is
+therefore required only when the count is in range. This avoids falsely treating
+an invalid raw count as a mathematical invalidity of the empty list.
+
+The full gate is `python3 scripts/check_system_proofs.py --out build/system-proofs`
+inside the pinned container. It includes the 14 scalar exact targets plus the
+seven closed batch targets, rebuilds every dependency from a snapshot, audits
+all declarations (not just endpoint names), rejects generated admission leakage,
+and runs `coqchk`. `system_proof_engine.py` shares the audit engine with the scalar
+entry point; each entry point fixes its own target set and report metadata.
+The infrastructure-only and scalar-only reports intentionally remain narrower.
+
+The [committed evidence record](../../docs/evidence/finite-system.json) binds the
+accepted full-system snapshot and the independently rerun mathematical/legacy
+gates. Full generated audit outputs are reproducible in the listed build paths.

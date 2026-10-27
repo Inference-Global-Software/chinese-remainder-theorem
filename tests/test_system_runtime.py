@@ -199,6 +199,16 @@ class SystemRuntimeTests(unittest.TestCase):
                     vectors += scalar_vectors(a, m, b, n)
         self.check_vectors(vectors)
 
+    def test_two_capacity_blocks_compose_beyond_direct_batch_capacity(self):
+        vectors = []
+        for first, second, expected in [((2, 6), (5, 9), (14, 18)),
+                                        ((0, MAX), (0, 2), (-3, -3)),
+                                        ((0, 2), (1, 2), (-1, -1))]:
+            vectors += batch_vectors([first] * 16) + batch_vectors([second] * 16)
+            vectors += scalar_vectors(*first, *second)
+            self.assertEqual(reference([first[0], second[0]], [first[1], second[1]]), expected)
+        self.check_vectors(vectors)
+
     def test_cli_decimal_transport_and_classification(self):
         fixtures = [((), 0, {'status': 'solved', 'solution': '0', 'period': '1'}),
                     ((MAX - 1, MAX), 0, {'status': 'solved', 'solution': str(MAX - 1), 'period': str(MAX)}),
