@@ -514,3 +514,43 @@ the representations and tested binary; they do not prove the compiler or Node's
 WebAssembly engine correct. See the [full proof coverage](../proofs/README.md)
 and [implementation reading guide](../references/README.md) for the formal
 interfaces and supporting literature.
+
+## Three schedules, full-width words, and reusable summaries
+
+The native `systems/` project adds a third schedule without moving its loops into
+the host. Build with `infs build` from `systems/`, then run from the repository root:
+
+```sh
+node systems/scripts/demo.mjs --json 2 6 5 9 8 15
+```
+
+The answer is **68 mod 90**. The first two schedules summarize to **14 mod 18**;
+`crt_merge_solve(14,18,8,15)` and `crt_merge_period(14,18,8,15)` give 68 and 90.
+This summary represents every integer solution of its block, so it can be merged
+with other successfully represented blocks. The actual-execution composition
+proof covers this reuse, including incompatible or overflowing unions.
+
+The batch has capacity 16; the finite-list mathematics has no capacity limit.
+Invalid input returns -2, incompatibility -1, and a compatible system whose LCM
+exceeds 9223372036854775807 returns -3. Both fields use the same classification.
+The implementation validates the active prefix, scans every pair for compatibility,
+and only then accumulates. Thus the inconsistent system below reports -1 even
+though its first two constraints alone would overflow, in every permutation:
+
+```sh
+node systems/scripts/demo.mjs --json 0 3037000500 0 3037000501 1 2
+```
+
+`BatchExecutionTargets.v` connects these outcomes to actual normal executions,
+with explicit memory regions and all signed count/word values. Finite cursor
+arguments cover the validation, nested pair scan and accumulation loops; checked
+arithmetic and array bounds guards are proved along the exact emitted paths.
+The proof convention is existence of a terminating normal execution and correctness
+of every normal result, rather than universal termination for all schedules.
+
+The compiler's aggregate source-spec limitation means the batch specification is
+a direct Rocq execution theorem. All eight generated helper and five scalar public
+assertions are separately closed. See the [complete API and reproduction steps](../systems/README.md)
+and [proof inventory](../proofs/systems/README.md) for the raw ABI, trust boundary,
+fixed targets and audit details. The host runner's serialization remains outside
+the operational theorem; it prepares complete arrays at offsets 0 and 128.

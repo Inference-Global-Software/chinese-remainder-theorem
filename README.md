@@ -15,13 +15,35 @@ targets are also proved: calls have terminating executions, and every normally
 returned result satisfies its contract. See [proof coverage and trust
 boundary](proofs/README.md).
 
+## Finite systems and full-width merging
+
+The separate [`systems/` project](systems/README.md) extends the example to up to
+16 congruences and the full positive signed-i64 modulus range. Its finite-list
+mathematics is unbounded. Both batch exports and the reusable scalar merge
+exports have direct proofs of their actual emitted Wasm execution, including
+invalid-before-incompatible-before-overflow precedence. Actual execution results
+are independent of permutation, and successful block summaries compose.
+
+```sh
+cd systems
+infs build
+cd ..
+node systems/scripts/demo.mjs --json 2 6 5 9 8 15
+```
+
+This returns solution **68** and period **90**. The empty system returns `(0,1)`.
+See [the API, memory boundary, error codes and proof command](systems/README.md).
+The root project below retains its original pair API and certificates.
+
 ## Run it
 
 Requirements: the `infs` Inference toolchain, Node with WebAssembly/BigInt
 support, and Python 3.9+ for tests and proof auditing. The recorded compiler is
 `infc 0.0.6`, revision `95db5e4`, ABI `1.10`.
-Checking the mathematical proofs additionally requires Coq 8.20.x (`coqc` and
-`coqchk`). Generated-Wasm proofs use the [pinned verifier container](scripts/wasm_environment/README.md).
+Mathematical and generated-Wasm proof checks run in the
+[pinned verifier container](scripts/wasm_environment/README.md), which supplies
+Coq 8.20.1 and the locked dependencies. Host test discovery never selects a host
+Rocq compiler.
 
 ```sh
 infs build
@@ -46,15 +68,18 @@ Pass your own residues and moduli in order `a m b n`:
 node scripts/demo.mjs 2 6 4 9
 node scripts/demo.mjs --json 2147483646 2147483647 2147483645 2147483646
 python3 -m unittest discover -s tests -v
-python3 scripts/check_proofs.py
+docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
+  opam exec -- python3 scripts/check_proofs.py
 ```
 
 All integer transport uses BigInt or decimal strings. The CLI rejects values
 outside signed `i64` before passing arguments to Wasm. Exit status is 0 for a
 solution, 1 for incompatibility, 2 for invalid input, and 3 for an execution/setup
-error. The Python commands run the runtime, CLI, mutation, and proof-audit tests,
-then compile and independently check the mathematical proofs. Tests build native
-projects through `infs`; set `INFC_PATH` to select a particular compiler.
+error. Host test discovery runs the runtime, CLI, mutation, and lexical proof-audit
+tests. Compiler-dependent proof controls are skipped on the host and run inside
+the verified pinned container. The Docker command compiles and independently
+checks the mathematical proofs. Tests build native projects through `infs`; set
+`INFC_PATH` to select a particular compiler.
 
 ## The problem
 
@@ -97,7 +122,7 @@ The implementation accepts moduli from `1` through `2^31 - 1`, normalized
 nonnegative remainders, and uses `i64` arithmetic. `crt_solve(a,m,b,n)` returns
 `-2` for invalid input, `-1` for valid incompatible input, and otherwise the
 canonical solution. `crt_period(m,n)` returns `-2` for invalid moduli and otherwise
-their lcm. These are the only two exported functions. Internal helpers have
+their lcm. These are the root project’s two exported functions. Internal helpers have
 explicit preconditions. The mathematical CRT theorem covers unbounded integers.
 
 ## Verification approach

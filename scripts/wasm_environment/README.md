@@ -82,6 +82,21 @@ project's proof instructions for the required build order and companion proof
 namespace flags. Rebuild pure Coq modules in this container before importing
 them into the generated-Wasm proof modules.
 
+Check the mathematical proofs and compiler-dependent gate controls in this same
+container:
+
+```sh
+docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
+  opam exec -- python3 scripts/check_proofs.py
+docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
+  opam exec -- python3 -m unittest discover -s tests -p test_proof_gate.py -v
+```
+
+These commands verify the project mount, image provenance and dependency-lock
+markers, compiled verifier location, and pinned opam compiler selection before
+launching Rocq. Ordinary host test discovery skips compiler-dependent controls
+even if a host `coqc` is installed. Lexical proof-hole controls remain host runnable.
+
 Check the full CRT certificate (after running `python3 scripts/build.py` on the host):
 
 ```sh
@@ -92,3 +107,8 @@ docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
 This includes exact generated contract checks, transitive assumption auditing,
 a negative control that rejects the generated admitted certificate, and an
 independent `coqchk` run. Results are written to `build/wasm-proofs/report.json`.
+
+See the [proof inventory](../../proofs/README.md),
+[finite-system proof instructions](../../proofs/systems/README.md), and
+[reference provenance](../../references/README.md) for the project-level claims
+and sources checked in this environment.

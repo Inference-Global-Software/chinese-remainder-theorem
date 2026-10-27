@@ -1,0 +1,415 @@
+{
+  "date": "2026-10-27",
+  "status": "finite_system_compiled_execution_and_algebra_checked",
+  "runtime_capacity": 16,
+  "mathematical_capacity": "unbounded finite lists",
+  "execution_strength": "Existence of a terminating nontrapping normal execution and correctness of every normal result; not universal termination under every reduction schedule.",
+  "raw_abi": "Signed i32 count, arbitrary i64 words, two readable complete 128-byte regions in one-page memory without 32-bit wrap; aliasing permitted when representations agree.",
+  "error_precedence": [
+    "invalid (-2)",
+    "incompatible (-1)",
+    "overflow (-3)",
+    "success"
+  ],
+  "full_system_audit": {
+    "path": "build/system-proofs-final-3/report.json",
+    "sha256": "9b39ef2ce00315d5c622ba740f364bff9c91d5a8dc1a23426bf252b2ac67d9a8",
+    "status": "finite_system_wasm_execution_checked",
+    "audited_declarations": 1336,
+    "exact_targets": [
+      "exact_system_gcd_execution",
+      "exact_system_normalize_execution",
+      "exact_system_inverse_execution",
+      "exact_system_add_execution",
+      "exact_system_mul_execution",
+      "exact_system_merge_solve_execution",
+      "exact_system_merge_period_execution",
+      "exact_system_scalar_export_bindings",
+      "exact_system_model_realized",
+      "exact_system_helper_contracts",
+      "exact_system_public_contracts",
+      "exact_system_scalar_shared_contracts",
+      "exact_system_helper_contract_count",
+      "exact_system_public_contract_count",
+      "exact_batch_export_bindings",
+      "exact_system_batch_solve_execution",
+      "exact_system_batch_period_execution",
+      "exact_system_batch_permutation",
+      "exact_system_batch_success_summary",
+      "exact_system_batch_composition",
+      "exact_system_batch_concat"
+    ],
+    "modules": [
+      "ReadOnly",
+      "ReadOnlyDeterminism",
+      "ReadOnlyFlatJoin",
+      "ReadOnlyConfluence",
+      "SystemRuntime",
+      "SystemMemory",
+      "SystemArrayExecution",
+      "FullWidthExecution",
+      "FullWidthInversePrefix",
+      "AddModExecution",
+      "SystemCalls",
+      "FullWidthInverseExecution",
+      "SystemControl",
+      "MulLoopState",
+      "MulModExecution",
+      "SystemExecutionBridge",
+      "MergeValidation",
+      "MergeSolvePure",
+      "MergeSolveExecution",
+      "MergePeriodExecution",
+      "ScalarResultFacts",
+      "ScalarExecutionTargets",
+      "SystemSpecModel",
+      "SystemSpecRealization",
+      "SystemSpecPayloads",
+      "SystemSpecCertificates",
+      "ArrayAccess",
+      "BatchArithmetic",
+      "BatchCount",
+      "BatchValidation",
+      "BatchPair",
+      "BatchClassState",
+      "BatchValidateLoop",
+      "BatchPairRow",
+      "BatchPairLoop",
+      "BatchClassModel",
+      "BatchClassExecution",
+      "BatchPublicPrefix",
+      "BatchPeriodFold",
+      "BatchPeriodExecution",
+      "BatchSolveFold",
+      "BatchSolveExecution",
+      "BatchExecutionAlgebra",
+      "BatchExecutionTargets"
+    ],
+    "source_contracts": {
+      "helper_assertions": 8,
+      "public_assertions": 5,
+      "shared_runtime": "CRTSystems.SystemRuntime.system_initial_runtime"
+    },
+    "transitive_assumptions": [
+      "ClassicalDedekindReals.sig_forall_dec",
+      "ClassicalDedekindReals.sig_not_dec",
+      "Classical_Prop.classic",
+      "FunctionalExtensionality.functional_extensionality_dep",
+      "simd_execute.SIMD_ops.app_vbinop_str",
+      "simd_execute.SIMD_ops.app_vshiftop_str",
+      "simd_execute.SIMD_ops.app_vternop_str",
+      "simd_execute.SIMD_ops.app_vtestop_str",
+      "simd_execute.SIMD_ops.app_vunop_str"
+    ],
+    "independent_kernel_check": "passed",
+    "generated_admission_negative_control": "rejected",
+    "input_and_staged_drift_check": "passed"
+  },
+  "fresh_mathematical_audit": {
+    "path": "build/task5-legacy-math/report.json",
+    "sha256": "31207222bcf6c0f8e27c73ccbd80791b7e3ed8715561d4a9dca8af4bbd924372",
+    "status": "mathematical_proofs_checked",
+    "exact_target_count": 60,
+    "audited_total": 194,
+    "independent_kernel_check": "passed"
+  },
+  "fresh_legacy_wasm_audit": {
+    "path": "build/task5-legacy-wasm/report.json",
+    "sha256": "412484950f7ee9a6333c37db633456bfc1f26cda3a3e68eae442af39c4e342e9",
+    "status": "generated_module_contracts_and_execution_targets_checked",
+    "audited_declarations": 320,
+    "exact_execution_targets": {
+      "solve_execution_proved": "T_solve_execution",
+      "period_execution_proved": "T_period_execution",
+      "gcd_execution_proved": "T_gcd_execution",
+      "normalize_execution_proved": "T_normalize_execution",
+      "inverse_execution_proved": "T_inverse_execution"
+    },
+    "generated_admission_negative_control": "rejected",
+    "independent_kernel_check": "passed"
+  },
+  "host_tests": {
+    "command": "INFS=/path/to/infs INFC_PATH=/path/to/infc python3 -m unittest discover -s tests -v",
+    "tests": 51,
+    "passed": 49,
+    "host_skipped": 2
+  },
+  "container_negative_controls": {
+    "tests": 2,
+    "passed": 2,
+    "controls": [
+      "weakened finite target rejected",
+      "implicit False premise rejected"
+    ]
+  },
+  "native_mutations": [
+    {
+      "mutation": "composition_loses_previous_summary",
+      "status": "counterexample_rejected",
+      "exit_code": 1,
+      "failure_kind": "AssertionError",
+      "mutated_source_sha256": "cfe3e1c9de0af10e98052871f3ad620a2f9fe2e9d80584282f4e7df9a6ddb4f7",
+      "wasm_sha256": "4b67382fdc182014ccbeffab545d7161c39686407fa742c822a05b317c3983a6",
+      "vectors_sha256": "dfaed0f7e40502950b5ff7f52f6b622e37c17c62ddf5a0a555890a753b0544b4"
+    },
+    {
+      "mutation": "period_guard_rejects_equality",
+      "status": "counterexample_rejected",
+      "exit_code": 1,
+      "failure_kind": "AssertionError",
+      "mutated_source_sha256": "021438ca20f199ea0d78e4fd66dac78acae17105a1fba8ae3c6725f8cd181ca2",
+      "wasm_sha256": "a25114bf41be5fada8463d6a42225b378daffe1f1f68c90ab6f5fd442b192e56",
+      "vectors_sha256": "1dee18290507e9c41d2c15e199f49cc0e2f4ff95015bfdfe30d80ef32ae7d5af"
+    },
+    {
+      "mutation": "period_guard_reversed",
+      "status": "counterexample_rejected",
+      "exit_code": 1,
+      "failure_kind": "RuntimeError",
+      "mutated_source_sha256": "81a5a3dafd974c8ed3f5068add83d278c2f688b8d4bd32879d545ad09b927834",
+      "wasm_sha256": "09d479aa355c06a08d88d5ada439e9d2debed65dad81e880763661657251bb29",
+      "vectors_sha256": "f7592390985680005b929eea4f4ec0a2bb9d8d2256bd4451fafc262efedbc2fe"
+    }
+  ],
+  "log_hashes": {
+    "build/task5-host-tests-final.log": "fd55510d72c1e76e956685ac0043dc4b65abcb25437e54638e981d2615a9ff26",
+    "build/task5-container-proof-controls.log": "87dbbdeda3e1d65b345f43b24a74286455a1fcdc801fb1a8eb5044d436477750",
+    "build/system-proofs-final-3/ExactTypes.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "build/system-proofs-final-3/Audit.log": "017efacc349b5da7189f0ff2a9ba4edd38e4402b205059f3db0e015ed87f66bb",
+    "build/system-proofs-final-3/RejectedCertificate.log": "8b6537520e26823e128e264d73f042bee4380f518bc30e81121869ab328fed57",
+    "build/system-proofs-final-3/coqchk.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "build_manifests": {
+    "systems": {
+      "mode": "proof",
+      "project": {
+        "path": "Inference.toml",
+        "sha256": "7fe7fac5a202a354e3727b6187729c44935040c293946287e2ffbc5db9ce7213"
+      },
+      "infs": {
+        "version": "infs 0.0.6",
+        "sha256": "347f0d697502b5cba13cb2e1445edaef3ccd9e651cf45bd75b19c5386b0368b0"
+      },
+      "compiler": {
+        "version": "infc 0.0.6",
+        "commit": "95db5e4",
+        "abi": "1.10",
+        "sha256": "f1a21617e2dbdfdbb4dfed5c46a75edd9db6bfb787e447e1883d637d3d3f9b84"
+      },
+      "source": {
+        "path": "src/main.inf",
+        "sha256": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45"
+      },
+      "artifacts": {
+        "main.wasm": "996789b7bf60b501e81d5882de65687d914413a90e003b27521a4e2783411518",
+        "main.v": "ec68a6f668e9244a1af483aaade188f14c4a6f6e00d78adf19ef7ae67c5811d4"
+      },
+      "compiled_wasm_proof": "pending"
+    },
+    "legacy": {
+      "mode": "proof",
+      "project": {
+        "path": "Inference.toml",
+        "sha256": "cd0111eba221937826d66284175f6779db2cb1d4e68ae1b8edca49ab89ea6179"
+      },
+      "infs": {
+        "version": "infs 0.0.6",
+        "sha256": "347f0d697502b5cba13cb2e1445edaef3ccd9e651cf45bd75b19c5386b0368b0"
+      },
+      "compiler": {
+        "version": "infc 0.0.6",
+        "commit": "95db5e4",
+        "abi": "1.10",
+        "sha256": "f1a21617e2dbdfdbb4dfed5c46a75edd9db6bfb787e447e1883d637d3d3f9b84"
+      },
+      "source": {
+        "path": "src/main.inf",
+        "sha256": "f0dc2f03f61a04a77ca091b48ecac392d2e065c485cb1983d4a614d9471078bf"
+      },
+      "artifacts": {
+        "main.wasm": "33fb0a04a5084f77a847fb78af8a0b4059352da3d454ecbb64a9c37df27e5276",
+        "main.v": "f203b426cbeba45e8d4a23c7781ebda89cc08a7c32e76857682bfad3349b6b15"
+      },
+      "compiled_wasm_proof": "pending"
+    }
+  },
+  "bound_inputs": {
+    "scripts/check_proofs.py": "c5cc00f9d8f11aee9b66091ec007ba971a15e9941c90ed4c031ff46863463143",
+    "scripts/check_wasm_proofs.py": "540cdadcb30a76e870816b1cbb30e3ffccd6f0720b0442062f17397b9d4de9b3",
+    "scripts/check_system_infrastructure.py": "74ddbab135a11a371367da6490495887f28ce237cd0092610d6ba7d7971f3438",
+    "scripts/system_proof_engine.py": "7c9d60c659e9e9a32ddf30105c81c70e0872df4d6f82508a6a3638e05a28d096",
+    "scripts/check_system_scalars.py": "3770bf6e91c8b83c11dc789719ecfd6e2b62c140d6ff660d0ba27eddd87b1135",
+    "scripts/check_system_proofs.py": "2210c6e883bb228308c75917f0a045a34824f4cc929ed048e886bb503d78318b",
+    "scripts/wasm_environment/provenance.json": "ecea9409d4a2e65b3c8e0d99b8fab89dad45605a031faa8913d0c982cf33fc97",
+    "scripts/wasm_environment/worker-opam.lock.json": "54a7906c1a35c7a605bd0b7cadce4c0689aa0a7a41c71121c939bf59e5eb0a1a",
+    "proofs/wasm/assumptions.allow": "48869cfb776fad5be31d01b426c692e691b59c3195bd7539f154ff508e7e3674",
+    "systems/out/manifest.json": "a2e560f7d99db8ba5fdc4067eab89ff58c867958d44842785b40fcf612a81c44",
+    "systems/src/main.inf": "29819309d17eecd7e21a1543ade39556fe79596aefbb6a1575f56451a540ee45",
+    "systems/Inference.toml": "7fe7fac5a202a354e3727b6187729c44935040c293946287e2ffbc5db9ce7213",
+    "systems/out/main.v": "ec68a6f668e9244a1af483aaade188f14c4a6f6e00d78adf19ef7ae67c5811d4",
+    "systems/out/main.wasm": "996789b7bf60b501e81d5882de65687d914413a90e003b27521a4e2783411518",
+    "out/manifest.json": "17fdb9dd3b732bddc978dde8264e95d7dbae86fa417fcbed31555ec030b38116",
+    "src/main.inf": "f0dc2f03f61a04a77ca091b48ecac392d2e065c485cb1983d4a614d9471078bf",
+    "Inference.toml": "cd0111eba221937826d66284175f6779db2cb1d4e68ae1b8edca49ab89ea6179",
+    "out/main.v": "f203b426cbeba45e8d4a23c7781ebda89cc08a7c32e76857682bfad3349b6b15",
+    "out/main.wasm": "33fb0a04a5084f77a847fb78af8a0b4059352da3d454ecbb64a9c37df27e5276",
+    "proofs/systems/ReadOnly.v": "97476346eeba7c994ea2208f8e73e8fbc31bfee6dafeb5215ecc7749cc53d9b2",
+    "proofs/systems/ReadOnlyDeterminism.v": "32340d3d90477b4123b908e7bc32a7dabe988bfc485f934cb400e3eb02b1e148",
+    "proofs/wasm/CRTExecutionContexts.v": "4f79357c91f95715ca9c3fd2b26c6482822d061df5dcfdec3be12a8fd264bfbe",
+    "proofs/wasm/CRTExecutionEscapes.v": "e301c2904ab322bdc779d528b84575f0cc2e034ff8ee30342a592cdf50043fb3",
+    "proofs/wasm/CRTContextFactor.v": "ab3307c252c7fe95cfecd74f68a50020af16a29a65be496f8a22ad74967cdb21",
+    "proofs/wasm/CRTFlatContext.v": "c7b0e39feccf9a8469db8f5b33e46a24a63883008b7e4c305e41929f70b570b8",
+    "proofs/wasm/CRTCallInversion.v": "f499bad6d5b8a87dbe421ae01c4dcf87ba794d0f372df9f65501d90fa12dbd35",
+    "proofs/wasm/CRTStorePure.v": "099209687155b7ee51f9208ccf80ef44624e70c6e5a636a4489d79869f17057c",
+    "proofs/wasm/CRTResourceReads.v": "45d63b838813703106817712a982b352102dfdf82f546ff380aceded4c66de1c",
+    "proofs/wasm/CRTSimpleDeterminism.v": "af6f15874a55cea766fe5f6564f634924ab908616615d3e9b2fa28bc0e9cab68",
+    "proofs/wasm/CRTDirectDeterminism.v": "d3cb08cf45d87c65869292be29e08525ddcc2fbaf47064af86690bdbe7a9483b",
+    "proofs/systems/ReadOnlyFlatJoin.v": "4ca17c25d2360c99cd2c118183c49e4b03fe7e4250c98991f9cb24edf9c560ab",
+    "proofs/wasm/CRTConfluence.v": "43a721749f197de439c3f483234cd61b4b30db7d620cf332e93c98215c035106",
+    "proofs/wasm/CRTDirectShape.v": "781a5845c540ab93bfc8538dbbddadbcd048762670c80b9d8ff0e4e6d2ace845",
+    "proofs/wasm/CRTDirectTrap.v": "d44fabb6a48be584396acdf822f94ba6fe2d27830af65c10c3029f0867b29b4a",
+    "proofs/systems/ReadOnlyConfluence.v": "97e2e83ddda744e7b06b736e12b9c401f3ad422683836eca51f58573883657d2",
+    "proofs/wasm/CRTDirectDeepOverlap.v": "13a2c54e3b20ecdca95c6a5fddeeb2bc6284abe0631dfa981993cdf7e270280b",
+    "proofs/wasm/CRTSurfaceReduction.v": "4fb06f7af09875c30a2e62094775638a3c022e470f4990b4d6f397a7c8281b67",
+    "proofs/systems/SystemRuntime.v": "925f0a8d9f522101d32cc08d1cc7830ed0a80752fa83290c5608b3c81706ea46",
+    "proofs/systems/SystemMemory.v": "40dd544184e7311e4fb9f7cec9fabbb8921552a1ef5165937c0d82f3e242e53e",
+    "proofs/systems/SystemArrayExecution.v": "e03a8428d2e94e93e01a3d9a8dfbf15d5e18452e738fd0e83e7146d834255437",
+    "proofs/systems/FullWidthExecution.v": "fc6db2f8a9d21d13d6f0dcaa31ff98b2afb87f319c7daf7ea73650f384365272",
+    "proofs/wasm/CRTLoopRules.v": "9528d667ebc17b9e996560e79d41ee209c482d62a188645156b9af198c8ca670",
+    "proofs/systems/FullWidthInversePrefix.v": "f67b16b0c26271b421fd4e80afb3f51b767f9302b11c98e8e05c1101ad8151a0",
+    "proofs/wasm/CRTCheckedArithmetic.v": "287f8be3f6e77ac9ad6273ea35273df9c615a4813fbc6a0b122b60525a6b376f",
+    "proofs/wasm/CRTExecution.v": "189b2866293c58e6ab688abbdcfced3bd67840af3503d06936c34c0d40d1650f",
+    "proofs/systems/AddModExecution.v": "9027052a895e38cbd55cd19b02057273b12565d80063537daf746703d522e5d0",
+    "proofs/wasm/CRTGeneralArithmetic.v": "a172f72b28b240523489e7185de155836481d1228579c592a1bbc8f372c1ff4d",
+    "proofs/wasm/CRTContracts.v": "3d6e547dd015b8b4bb5711c1494dbfe9f3be6a499253e260d2c4deb472b6220f",
+    "proofs/wasm/CRTAPIModel.v": "b1657077ed33011589c22872bfc4254739af5c9f27d623772ef0752f1f00be9c",
+    "proofs/systems/SystemCalls.v": "920b25627bcab5b2bd787ccbd3d4af9f7eb245c3847c5decddba66c7e9996928",
+    "proofs/systems/FullWidthInverseExecution.v": "5a7b0b7be7dfb927e8d285e2b06d66414afc6f4d6bb143c3a092a879df11477e",
+    "proofs/systems/SystemControl.v": "2daf683318211daa8e24c83b03f032cb17eb845d3519db90be8848b319a7d02b",
+    "proofs/systems/MulLoopState.v": "875020f5d16319c7542747bbddfcafb4d0db48c59c9fb01f5186bd31a4aec7da",
+    "proofs/systems/MulModExecution.v": "4a2027a433f14fc9ecf23f53ce8cd45c5d3b6d3bb14d934181c758a65924b78a",
+    "proofs/systems/SystemExecutionBridge.v": "6a872b68339a3fc06040a0f5c13a47f672848ea90130446ca6c686d5a51267be",
+    "proofs/systems/MergeValidation.v": "dda9de78aa50257b1e021b71a6d168029c4855aad65c48b553d1c2655c746ab0",
+    "proofs/wasm/CRTPublicExecution.v": "adbd44cc914e518bd4244790d3ba5a28fdfbb5724fefbb4f53597bc89e32b0cc",
+    "proofs/wasm/CRTModule.v": "44956d96abcd847ec215e8047072c54b5e3f3f8cccf09d94364e3a3edb031ae0",
+    "proofs/wasm/CRTCalls.v": "ee9b10151ee3efa0fb2967c66167f9e7db1a1531d6cc7eacfc14bd4d4df0844b",
+    "proofs/wasm/CRTSolveExecution.v": "d5af735716299f35769958c1b6040c8262dfa34c38c157ffd44be5fae4fc3427",
+    "proofs/wasm/CRTInverseExecution.v": "d669f286192b56d181e78536d2117e1da520c55b58baaaead72541784bc66170",
+    "proofs/systems/MergeSolvePure.v": "b8aced580946993f08465e0d20c52dfe1f90b7eacb1be2e266f1aea1cf49c4e3",
+    "proofs/systems/MergeSolveExecution.v": "f5cbbffec827cc34412fe2aaca8638fabcebb52ac1891d8aa16269dc8056de38",
+    "proofs/systems/MergePeriodExecution.v": "c692017a499cece12399515e655b983e49488c5b09a79567556013d43417150d",
+    "proofs/systems/ScalarResultFacts.v": "046a8b74c7c52359e6ccdf2ba80254425079a206ac970007f90e7c3552327778",
+    "proofs/systems/ScalarExecutionTargets.v": "a89b683b36a8cd979acb215f1becf216e7950a28917ac652123cc99e12082438",
+    "proofs/systems/SystemSpecModel.v": "943727d3f18c190c876b3fcc6655620899f75e567655017e7fe89b49a29395d4",
+    "proofs/systems/SystemSpecRealization.v": "2d25a7a38ca0909480db3c86bf810540a04e7726e9f4fbb19646b9f359ff74ab",
+    "proofs/systems/SystemSpecPayloads.v": "8321d4313cc7500256caa46d75f64e60a256ba474efe39d079f866a7582d615d",
+    "proofs/wasm/CRTSpecPayloads.v": "6500a2ad089a8fdf21cd9a2d743ab8c86b2c354166a2276cf57e2031dc7f75ed",
+    "proofs/systems/SystemSpecCertificates.v": "43bd934422108bf8d9597d30297d7c8ad32e1ac8f3d45f1b11ea0bed1937aa3e",
+    "proofs/systems/ArrayAccess.v": "e05a288c90eccc402458318b125cd367512361ea55281c6de714f70e6a22dda5",
+    "proofs/systems/BatchArithmetic.v": "ae9fcf69aad9b3c3d28093f73fb59dead854c59731bdaaf90f54e959d894a83a",
+    "proofs/systems/BatchCount.v": "297445b1b3f109d79fe014ff77b9a23fbec0a3730b1503629fb150e565f29f83",
+    "proofs/systems/BatchValidation.v": "d32bfe3a6154f90abbe7a139ca86776f06af23716cfb5206f2b00ca85745d4ac",
+    "proofs/systems/BatchPair.v": "8fa31f44eaaab0b6c037127063a8ac925edfbcbd6d1af4de630fedd8e12cd1a6",
+    "proofs/systems/BatchClassState.v": "4f9890e48f84668e607ecb54e65bdabe19fecc20e513ed5c7189f722343ca156",
+    "proofs/systems/BatchValidateLoop.v": "9cfeff2a36efa7cc8b88854f5e889e6d888a831ae2f14491691140b5f4a8714e",
+    "proofs/systems/BatchPairRow.v": "3b0cb84dcaee91d49df3d75f5412a871ea1f3efdaa287316ff4135438709ddc1",
+    "proofs/systems/BatchPairLoop.v": "a355d75411b43f5f3a26a8a574211c7f54a1e86fd4e3d420864d0c5f2b08e423",
+    "proofs/systems/BatchClassModel.v": "92b8a01e563f7cea33c531fe43a905807b86044591491940f59ce554399d8d39",
+    "proofs/systems/BatchClassExecution.v": "e5e7792dce914ef9106a84edfd67c8f585ccc092851dbef7aac00f66a2f5ea17",
+    "proofs/systems/BatchPublicPrefix.v": "3de46dbc262a63967afb0be1d6c615549538f38fe76ec2e59efec1e99719625a",
+    "proofs/systems/BatchPeriodFold.v": "d1f324c03e281819ae0aec4c22edff97058a034335f69744c7716b4fafc08645",
+    "proofs/systems/BatchPeriodExecution.v": "4b81d127cc083d4b8bca471f224c2cf8a86c3950943d0a621e6932654fcc1e87",
+    "proofs/systems/BatchSolveFold.v": "eb020e9f381e00a2879e3463d36f22ca79c6e9f1cbec5ee3ee4c2bf3dd9aa2bb",
+    "proofs/systems/BatchSolveExecution.v": "2a2b4daf04d37f81a4d1416f06e6f046fc71aedaa9d7428b11f95bb3676b062b",
+    "proofs/systems/BatchExecutionAlgebra.v": "d91bf470dd199e48b7baf5da5920b33e024200b93d48d86a873a5dbbc9677a22",
+    "proofs/systems/BatchExecutionTargets.v": "af626911dfbd848667f1247955e776cd6c87da758d961749babc2f47de04c33e",
+    "specifications/CRTStatements.v": "e8cf8f07465ac07f2ac9d8c758d5a9db1378ba2c2455ba4f8f85f67ccdcdc853",
+    "specifications/CRTSystemStatements.v": "7327277379d5925c01c12c0341f0422197c0407f4475a05f589266a612ece9fe",
+    "proofs/CRTMath.v": "3847875c0f6f491479e36936f6b6a7f1227e0dd0f49822a667bf8f8ffb76e343",
+    "proofs/CRTLoops.v": "ad6abd594ce47fb6d1b899b95f626e9cfbe58aba0260eebb34641c7d324c1d71",
+    "proofs/CRTSystemArithmetic.v": "7e8518d8c9a1675dd2cfcf05a64a6bafa4742ae1e11217e666e9905e7e45b455",
+    "proofs/CRTFinite.v": "1e17a2e75f4132a0ea13ff0abf1db433918036e96f96e51a5d26fb0048021e91"
+  },
+  "supplemental_hashes": {
+    "README.md": "3dfbc4416364f99dc395b07789def53058cc2499477b626823e7cec1f510ec8d",
+    "systems/README.md": "3f3b2397b9697c6eb7234c4e231513b2eb93d282de92468060e3e1dc545b9df0",
+    "proofs/README.md": "287e80f606d7756e7445971c40b62ab2822d300771d6c8cf8d9c1f520502909e",
+    "proofs/systems/README.md": "3b3b33c7be5dfac78a1b72f261701b662eb88c721c670d4f39dcc8d7947f359a",
+    "docs/walkthrough.md": "90ebb5925d653bdb904fd6313c2672143a7b24bb65eededf3bda74780bf933cc",
+    "scripts/build.py": "8daffc5d4ef061ccd44df08e75003c0a997d98106e51d833ca6b910c45d61e54",
+    "scripts/wasm_environment/README.md": "697dfa2f50ddabd224de804ef16adb01f665e997583ea9bcd2470fce1e6da2ec",
+    "systems/scripts/demo.mjs": "771d6274150a75684b88fc0b72a58506ab3dc86cf310ee46a2b2b47e56a3e3ed",
+    "systems/scripts/check_runtime.mjs": "a1091badb3e312b0831473ba1c5783642765a2b2729a253c568dff60333b31d0",
+    "tests/test_system_runtime.py": "06384da1a7ba2b9042909621c3c8f1fcaffecae6c5ad5be337f42e17b988598d",
+    "tests/test_system_mutations.py": "b2b6c5303247040f86505cddbe83df3bfc97b4929d49dbd8212d688d0e55ac54",
+    "tests/test_system_proof_gate.py": "3e7fd6d4df76fcdb5673700a9f7254fa30914588769337cd7a95252d4749cd9b",
+    "tests/test_system_scalar_gate.py": "fdabc37f3f43b89d4f66dacc493557f065e4a7a66b24acef8ef502021c0b934b"
+  },
+  "combined_gate_warnings": [
+    "CRTFinite: hiding N delimiting key (inherited)",
+    "CRTCalls: three map_length deprecation warnings (inherited)"
+  ],
+  "independent_gate_warnings": "Mathematical and original Wasm gates additionally report existing pinned MathComp notation overrides.",
+  "accepted_minor_style_findings": [
+    "proofs/systems/BatchClassExecution.v:224: new blank line at EOF",
+    "scripts/system_proof_engine.py:147: new blank line at EOF"
+  ],
+  "whitespace_check": "Standard staged diff check reports only the two retained EOF blanks; check disabling only blank-at-eof passes. Controller accepted frozen bytes to preserve audit provenance.",
+  "unchanged_boundary": "Original pair source/proofs/certificates, toolchain pins and upstream assumption allowlist unchanged.",
+  "examples": [
+    {
+      "constraints": [
+        [
+          2,
+          6
+        ],
+        [
+          5,
+          9
+        ],
+        [
+          8,
+          15
+        ]
+      ],
+      "solution": 68,
+      "period": 90
+    },
+    {
+      "constraints": [
+        [
+          0,
+          3037000500
+        ],
+        [
+          0,
+          3037000501
+        ],
+        [
+          1,
+          2
+        ]
+      ],
+      "status": "incompatible"
+    },
+    {
+      "summaries": [
+        [
+          14,
+          18
+        ],
+        [
+          8,
+          15
+        ]
+      ],
+      "solution": 68,
+      "period": 90
+    }
+  ],
+  "limitations": [
+    "JavaScript host serialization and compiler source-to-Wasm translation are outside the operational theorem.",
+    "Successful summaries are required for composition; bare error codes are not summaries.",
+    "Direct concatenated-batch comparison requires capacity16; scalar summary composition may represent larger unions."
+  ]
+}

@@ -144,3 +144,14 @@ is not used by these proofs.
 See [implementation evidence and commands](../docs/implementation.md) for
 reproduction. The original [feasibility report](../docs/specification-check.md)
 is historical and records the earlier signature-only check separately.
+
+## Finite-system extension
+
+The independent `systems/` native project has full positive-i64 scalar merging
+and bounded batch execution proofs. Mathematical finite-list CRT, exact overflow,
+permutation and composition are in `CRTFinite.v`; actual array/call/loop execution
+and the closed algebra transfers are inventoried in
+[systems/README.md](systems/README.md). The full gate is
+`scripts/check_system_proofs.py`, run only in the pinned container. It retains the
+same upstream assumption allowlist and excludes generated admitted certificates.
+The original pair sources, proof statements and certificates remain unchanged.
