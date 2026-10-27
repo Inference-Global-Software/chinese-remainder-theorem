@@ -14,21 +14,20 @@ Inference batch solver over fixed arrays. The latter keeps validation, checking,
 and accumulation in Inference; the former supports arbitrary host list lengths
 but leaves the concrete host loop outside the Inference execution proof.
 
-The proposed default is an Inference batch solver with capacity 16, backed by a
-full-width scalar merge API. This is the implementer's proposed boundary, not a
-user-selected capacity. Mathematical finite-list theorems have no capacity bound.
+The user selected an all-Inference bounded batch solver, backed by a full-width
+scalar merge API. Capacity 16 is the implementer's choice, not a user-selected
+capacity. Mathematical finite-list theorems have no capacity bound.
 The pinned compiler supports fixed arrays but does not support aggregate arguments
 to specification applications. Consequently scalar contracts use source specs;
 batch contracts must be stated directly over the emitted Wasm execution relation.
 Do not present successful specification emission as proof of batch correctness.
 
-The second choice concerns error precedence. The proposed default is invalid
+The user also selected incompatibility before overflow. The precedence is invalid
 input, then incompatibility, then overflow, then success. Validate the entire
 active input and check all pairs before accumulating, so an early overflow cannot
 hide a later contradiction. This costs quadratic compatibility checking.
 
-These defaults may be revised by the user's pending clarification. No compiler,
-verifier, or WasmCert upgrade is part of this work.
+No compiler, verifier, or WasmCert upgrade is part of this work.
 
 ## API and representation
 
