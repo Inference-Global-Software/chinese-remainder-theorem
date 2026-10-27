@@ -1,7 +1,8 @@
-# Finite-system operational infrastructure
+# Finite-system scalar correctness and operational infrastructure
 
-This directory provides infrastructure for the separate `systems/` project.
-It does **not yet certify the four public CRT exports**.
+This directory provides operational infrastructure and scalar execution proofs
+for the separate `systems/` project. The scalar gate certifies `crt_merge_solve`
+and `crt_merge_period`; batch execution correctness remains a separate task.
 
 - `ReadOnly` defines a recursive allowed instruction predicate and native-function
   store invariant. Every real reduction, including a native call or scalar load,
@@ -55,3 +56,48 @@ certificate, and runs independent `coqchk`. Evidence and logs are written to
 `build/system-infrastructure/`; the report explicitly marks public CRT execution
 correctness as uncertified. No ignored prototype or precompiled project object
 is required.
+
+## Scalar execution and source contracts
+
+`FullWidthExecution`, `FullWidthInversePrefix`, and `FullWidthInverseExecution`
+connect the unchanged helper algorithms to the full signed-i64 bounds and the
+new module runtime. `AddModExecution` and `MulModExecution` prove the exact
+emitted overflow-safe arithmetic. The multiplication proof follows all loop
+instructions, including the final factor doubling, and uses the fixed 64-step
+mathematical state recurrence to justify each backedge.
+
+`SystemCalls` and `SystemControl` compose native calls and structured control
+at `system_store mem`. Read-only preservation restores that same store before
+continuations. `MergeValidation`, `MergeSolvePure`, `MergeSolveExecution`, and
+`MergePeriodExecution` cover all signed-i64 inputs and all four outcomes:
+invalid (-2), incompatible (-1), overflow (-3), or success. Their results refine
+`FiniteSystem.merge`, whose classification is already proved in `CRTFinite`.
+
+`ScalarExecutionTargets` quantifies over arbitrary prepared memory and proves
+existence of a normal execution and correctness of every normal result for all
+seven scalar functions. It does not assert termination of every reduction
+schedule. No precondition excludes invalid public scalar inputs.
+
+`SystemSpecModel`, `SystemSpecPayloads`, `SystemSpecRealization`, and
+`SystemSpecCertificates` connect the exact eight emitted helper assertions and
+five public assertions to one interpretation realized in
+`system_initial_runtime`. The shared-runtime theorem exposes both sets of
+payloads together; the two `ValidSpec` certificates use that actual initial
+runtime. Prepared memory is never presented as an independently instantiated
+`module_runtime`.
+
+Run the scalar proof gate in the pinned container:
+
+```sh
+sg docker -c 'docker exec -u coq -w /workspaces/crt crt-finite-system-verifier opam exec -- python3 scripts/check_system_scalars.py'
+```
+
+The gate rebuilds the mathematical, unchanged legacy, generated, and new scalar
+source closure in a clean staging directory. It checks closed fixed signatures,
+audits handwritten declarations transitively against the existing assumption
+allowlist, rejects generated admitted certificates, and kernel-checks the
+results independently. Its report binds source and artifact hashes for both
+projects, verifier environment pins, checker dependencies, and staged bytes,
+and rejects input or staging drift before writing success. The report does not
+claim batch execution correctness. Host-safe failure controls live in
+`tests/test_system_scalar_gate.py`; they mock every compiler subprocess.
