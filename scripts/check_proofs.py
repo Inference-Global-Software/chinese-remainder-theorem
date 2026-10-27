@@ -3,6 +3,7 @@
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -75,6 +76,46 @@ FORBIDDEN = re.compile(r'\b(?:Admitted|Axioms?|Parameters?|Abort|admit|admit_no_
                        r'exact_no_check|vm_cast_no_check|native_cast_no_check)\b')
 
 
+def pinned_container_error():
+    """Select the pinned project image without executing any Rocq/opam command."""
+    if ROOT != Path('/workspaces/crt') or not Path('/.dockerenv').is_file():
+        return 'requires the pinned project container mounted at /workspaces/crt'
+    recipe = ROOT / 'scripts/wasm_environment'
+    installed = Path('/opt/crt-wasm-environment')
+    try:
+        for name in ('provenance.json', 'worker-opam.lock.json'):
+            if (installed / name).read_bytes() != (recipe / name).read_bytes():
+                return f'pinned container marker does not match: {name}'
+        provenance = json.loads((recipe / 'provenance.json').read_text())
+    except (OSError, ValueError) as error:
+        return f'pinned container markers unavailable: {error}'
+    if os.environ.get('COQ_VERSION') != provenance['coqVersion']:
+        return 'pinned container Coq version marker does not match'
+    verifier = Path('/workspaces/wasm-verifier/_build/default/theories')
+    if os.environ.get('WASM_VERIFIER_PATH') != str(verifier) or not (verifier / 'Verifier.vo').is_file():
+        return 'pinned compiled WasmVerifier environment is unavailable'
+    switch = Path('/home/coq/.opam/4.13.1+flambda')
+    if os.environ.get('OPAM_SWITCH_PREFIX') != str(switch):
+        return 'run inside the pinned container through opam exec --'
+    for executable in ('coqc', 'coqchk'):
+        if shutil.which(executable) != str(switch / 'bin' / executable):
+            return f'{executable} is not selected from the pinned container opam switch'
+    return None
+
+
+def exact_target_checks():
+    """Closed wrappers reject unresolved implicit proof premises, unlike Check."""
+    wrappers = []
+    text = ''
+    for module, endpoints in TARGETS.items():
+        for name, target in endpoints.items():
+            wrapper = f'exact_{module}_{name}'
+            wrappers.append(wrapper)
+            text += (f'Theorem {wrapper} : {target}.\n'
+                     f'Proof. exact {module}.{name}. Qed.\n')
+    return text, wrappers
+
+
 def uncomment(source):
     # Coq comments nest. Preserve line boundaries for declaration discovery.
     result, depth, i = [], 0, 0
@@ -118,6 +159,9 @@ def main():
         if source.stem in TARGETS:
             declarations += [(source.stem, name) for name in
                              re.findall(r'^\s*(?:Theorem|Lemma)\s+(\w+)\b', code, re.M)]
+    container_error = pinned_container_error()
+    if container_error:
+        parser.error(container_error + '; see scripts/wasm_environment/README.md')
     flags = ['-Q', str(out), 'CRT']
 
     def run(command, log_name):
@@ -132,16 +176,17 @@ def main():
         run(['coqc', *flags, source.name], source.stem + '.log')
     audit = ('From CRT Require Import CRTStatements CRTSystemStatements '
              + ' '.join(TARGETS) + '.\n')
-    for module, endpoints in TARGETS.items():
-        for name, target in endpoints.items():
-            audit += f'Check ({module}.{name} : {target}).\n'
+    exact_checks, wrappers = exact_target_checks()
+    audit += exact_checks
+    for wrapper in wrappers:
+        audit += f'Print Assumptions {wrapper}.\n'
     for module, name in declarations:
         audit += f'Print Assumptions {module}.{name}.\n'
     (out / 'Audit.v').write_text(audit)
     checked = run(['coqc', *flags, 'Audit.v'], 'Audit.log')
-    if checked.count('Closed under the global context') != len(declarations) or 'Axioms:' in checked:
+    if checked.count('Closed under the global context') != len(declarations) + len(wrappers) or 'Axioms:' in checked:
         raise RuntimeError('Assumption audit failed; see ' + str(out / 'Audit.log'))
-    run(['coqchk', '-silent', *flags, *('CRT.' + module for module in TARGETS)], 'coqchk.log')
+    run(['coqchk', '-silent', *flags, *('CRT.' + module for module in TARGETS), 'CRT.Audit'], 'coqchk.log')
     for source in sources:
         if hashlib.sha256(source.read_bytes()).hexdigest() != source_hashes[source.name]:
             raise RuntimeError(f'source changed during proof check: {source}')
@@ -151,6 +196,9 @@ def main():
         'exact_targets': TARGETS,
         'exact_target_count': sum(map(len, TARGETS.values())),
         'assumption_free_declarations': len(declarations),
+        'closed_exact_target_wrappers': len(wrappers),
+        'assumption_free_audited_total': len(declarations) + len(wrappers),
+        'pinned_project_container_verified': True,
         'independent_kernel_check': 'passed',
         'sources': source_hashes,
         'compiled_wasm_refinement': 'separate_obligation_not_established_by_this_check',

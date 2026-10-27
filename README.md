@@ -20,8 +20,10 @@ boundary](proofs/README.md).
 Requirements: the `infs` Inference toolchain, Node with WebAssembly/BigInt
 support, and Python 3.9+ for tests and proof auditing. The recorded compiler is
 `infc 0.0.6`, revision `95db5e4`, ABI `1.10`.
-Checking the mathematical proofs additionally requires Coq 8.20.x (`coqc` and
-`coqchk`). Generated-Wasm proofs use the [pinned verifier container](scripts/wasm_environment/README.md).
+Mathematical and generated-Wasm proof checks run in the
+[pinned verifier container](scripts/wasm_environment/README.md), which supplies
+Coq 8.20.1 and the locked dependencies. Host test discovery never selects a host
+Rocq compiler.
 
 ```sh
 infs build
@@ -46,15 +48,18 @@ Pass your own residues and moduli in order `a m b n`:
 node scripts/demo.mjs 2 6 4 9
 node scripts/demo.mjs --json 2147483646 2147483647 2147483645 2147483646
 python3 -m unittest discover -s tests -v
-python3 scripts/check_proofs.py
+docker exec -u coq -w /workspaces/crt crt-wasm-verifier-real \
+  opam exec -- python3 scripts/check_proofs.py
 ```
 
 All integer transport uses BigInt or decimal strings. The CLI rejects values
 outside signed `i64` before passing arguments to Wasm. Exit status is 0 for a
 solution, 1 for incompatibility, 2 for invalid input, and 3 for an execution/setup
-error. The Python commands run the runtime, CLI, mutation, and proof-audit tests,
-then compile and independently check the mathematical proofs. Tests build native
-projects through `infs`; set `INFC_PATH` to select a particular compiler.
+error. Host test discovery runs the runtime, CLI, mutation, and lexical proof-audit
+tests. Compiler-dependent proof controls are skipped on the host and run inside
+the verified pinned container. The Docker command compiles and independently
+checks the mathematical proofs. Tests build native projects through `infs`; set
+`INFC_PATH` to select a particular compiler.
 
 ## The problem
 
