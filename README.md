@@ -35,6 +35,11 @@ This returns solution **68** and period **90**. The empty system returns `(0,1)`
 See [the API, memory boundary, error codes and proof command](systems/README.md).
 The root project below retains its original pair API and certificates.
 
+**Interactive browser demo:** after building `systems/`, run
+`node web/serve.mjs` and open [localhost:4173](http://127.0.0.1:4173/).
+Enter congruences, try examples, and explore the complete solution class using
+the verified Wasm artifact. See [web demo instructions](web/README.md).
+
 ## Run it
 
 Requirements: the `infs` Inference toolchain, Node with WebAssembly/BigInt
